@@ -3,14 +3,17 @@
 // generation. Three rounds: Storm → Attack → Synthesis.
 // ============================================================
 
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { BaseAgent } from '../../core/agent.js';
+import { DEFAULT_MODELS } from '../../core/config.js';
 import { logger } from '../../utils/logger.js';
 import type { IdeaArtifact } from '../../types/artifacts.js';
 import { DEBATE_ROLES, type DebateRole } from './roles.js';
 
 export interface IdeaGenConfig {
   apiKey?: string;
+  baseUrl?: string;
+  model?: string;
   verbose: boolean;
 }
 
@@ -31,10 +34,17 @@ export class IdeaGenArena extends BaseAgent {
       systemPrompt:
         'You are the moderator of a creative debate arena. You facilitate a structured debate between 6 distinct personas to generate and refine product ideas.',
       apiKey: config.apiKey,
+      baseUrl: config.baseUrl,
+      model: config.model,
       maxTokens: 8192,
       temperature: 0.9,
     });
     this.arenaConfig = config;
+  }
+
+  // Get the effective model name for API calls
+  private get model(): string {
+    return this.config.model || DEFAULT_MODELS.ideaGen;
   }
 
   // -------------------------------------------------------
@@ -83,7 +93,7 @@ export class IdeaGenArena extends BaseAgent {
   private async round1Pitches(userPrompt: string): Promise<DebateMessage[]> {
     const pitchPromises = DEBATE_ROLES.map(async (role) => {
       const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: this.model,
         max_tokens: 2048,
         temperature: 0.9,
         system: `${role.systemPrompt}\n\nYou are in Round 1: Pitch your best product idea (1-3 ideas) based on your unique perspective. Each idea should include: name, one-line description, why it's valuable.`,
@@ -118,7 +128,7 @@ export class IdeaGenArena extends BaseAgent {
         .join('\n---\n');
 
       const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: this.model,
         max_tokens: 2048,
         temperature: 0.8,
         system: `${role.systemPrompt}\n\nYou are in Round 2: Attack the other roles' pitches. Point out flaws, competition, feasibility issues, scope problems, missing insights. Be specific and critical. If an idea is genuinely good, acknowledge it briefly but still challenge it.`,

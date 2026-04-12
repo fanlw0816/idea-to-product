@@ -4,19 +4,42 @@ import { writeFile, readFile, listFiles, fileExists } from '../../utils/fs-helpe
 import type { IdeaArtifact, DesignArtifact, BuildArtifact, ReviewArtifact, DeployArtifact } from '../../types/artifacts.js';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
+import * as http from 'http';
 
 const execAsync = promisify(exec);
+
+/** Poll a URL until it responds or timeout. */
+async function waitForServer(url: string, timeoutMs = 15000, intervalMs = 500): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, intervalMs));
+    try {
+      await new Promise<void>((resolve, reject) => {
+        http.get(url, (res) => {
+          res.resume();
+          res.on('end', () => resolve());
+        }).on('error', reject);
+      });
+      return true;
+    } catch {
+      // server not ready yet
+    }
+  }
+  return false;
+}
 
 export class DeployerAgent extends BaseAgent {
   private outputDir: string;
 
-  constructor(config: { apiKey?: string; outputDir: string }) {
+  constructor(config: { apiKey?: string; baseUrl?: string; model?: string; outputDir: string }) {
     super({
       name: 'DeployerAgent',
       systemPrompt: 'You generate README documentation for products. Make it clear, comprehensive, and professional.',
       apiKey: config.apiKey,
+      baseUrl: config.baseUrl,
+      model: config.model,
       maxTokens: 4096,
       temperature: 0.5,
     });
@@ -51,12 +74,36 @@ export class DeployerAgent extends BaseAgent {
         const scripts = pkg.scripts || {};
         if (scripts.dev) {
           logger.info('DEPLOYER', 'Starting dev server on port 5173...');
-          // Start in background
-          execAsync('npx vite --port 5173', { cwd: projectDir, timeout: 30000 }).catch(() => {});
-          url = 'http://localhost:5173';
+          // Start in background using spawn (don't wait for it to exit)
+          spawn('npx', ['vite', '--port', '5173'], {
+            cwd: projectDir,
+            stdio: 'ignore',
+            detached: true,
+          }).unref();
+
+          // Wait for server to be ready
+          const ready = await waitForServer('http://localhost:5173');
+          if (ready) {
+            url = 'http://localhost:5173';
+            logger.success('DEPLOYER', 'Dev server is ready at http://localhost:5173');
+          } else {
+            url = 'http://localhost:5173 (started, may still be initializing)';
+            logger.warn('DEPLOYER', 'Dev server started but not responding yet');
+          }
         } else if (scripts.start) {
-          execAsync('npm start', { cwd: projectDir, timeout: 30000 }).catch(() => {});
-          url = 'http://localhost:3000';
+          spawn('npm', ['start'], {
+            cwd: projectDir,
+            stdio: 'ignore',
+            detached: true,
+          }).unref();
+          const ready = await waitForServer('http://localhost:3000');
+          if (ready) {
+            url = 'http://localhost:3000';
+            logger.success('DEPLOYER', 'Dev server is ready at http://localhost:3000');
+          } else {
+            url = 'http://localhost:3000 (started, may still be initializing)';
+            logger.warn('DEPLOYER', 'Dev server started but not responding yet');
+          }
         }
       }
     } catch {

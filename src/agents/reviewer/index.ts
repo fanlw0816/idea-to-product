@@ -11,7 +11,7 @@ const execAsync = promisify(exec);
 export class ReviewerAgent extends BaseAgent {
   private maxRetries = 3;
 
-  constructor(config: { apiKey?: string }) {
+  constructor(config: { apiKey?: string; baseUrl?: string; model?: string }) {
     super({
       name: 'ReviewerAgent',
       systemPrompt: `You are a senior code reviewer and fixer. Your job:
@@ -30,6 +30,8 @@ When asked to fix errors, respond with file markers:
 [full corrected file content]
 --- END FILE ---`,
       apiKey: config.apiKey,
+      baseUrl: config.baseUrl,
+      model: config.model,
       maxTokens: 8192,
       temperature: 0.3,
     });
@@ -100,7 +102,7 @@ When asked to fix errors, respond with file markers:
       issues,
       fixes,
       testResults: {
-        lintOk: true,
+        lintOk: !issues.some(i => i.message.includes('lint') || i.message.includes('Lint')),
         buildOk,
         featuresComplete,
       },
@@ -109,12 +111,23 @@ When asked to fix errors, respond with file markers:
 
   private async tryBuild(projectDir: string): Promise<{ ok: boolean; errors: string[] }> {
     try {
-      // Install dependencies
+      // Install dependencies first
       await execAsync('npm install', { cwd: projectDir, timeout: 120000 });
+    } catch {
+      // npm install may fail if no package.json — continue to type check
+    }
 
-      // Try to build
-      await execAsync('npx tsc --noEmit 2>&1 || npm run build 2>&1', { cwd: projectDir, timeout: 60000 });
+    // Try TypeScript type-check first
+    try {
+      await execAsync('npx tsc --noEmit', { cwd: projectDir, timeout: 60000 });
+      return { ok: true, errors: [] };
+    } catch {
+      // tsc failed — fall through to npm run build
+    }
 
+    // Try npm run build
+    try {
+      await execAsync('npm run build', { cwd: projectDir, timeout: 60000 });
       return { ok: true, errors: [] };
     } catch (error: any) {
       const output = (error.stdout || '') + (error.stderr || '');

@@ -5,10 +5,10 @@ import type {
   DesignArtifact,
   BuilderSpec,
 } from '../../types/artifacts.js';
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 
 export class DesignerAgent extends BaseAgent {
-  constructor(config: { apiKey?: string }) {
+  constructor(config: { apiKey?: string; baseUrl?: string; model?: string }) {
     super({
       name: 'DesignerAgent',
       systemPrompt: `You are an expert product designer and technical architect. Given a product idea, you create a complete design specification including:
@@ -48,10 +48,11 @@ Be specific and actionable. Each spec should be buildable by a code-generating a
 ALWAYS include a "config" builder for project setup (package.json, tsconfig, vite config, etc).
 
 Respond in valid JSON only.`,
-      model: 'claude-sonnet-4-6-20250514',
+      model: config.model,
       maxTokens: 8192,
       temperature: 0.5,
       apiKey: config.apiKey,
+      baseUrl: config.baseUrl,
     });
   }
 
@@ -110,6 +111,7 @@ The builderSpecs are CRITICAL — they determine which parallel builder agents w
     // Ensure defaults for every field so downstream agents never crash
     design.pages = design.pages || [];
     design.dataModel = design.dataModel || { entities: {} };
+    design.techStack = design.techStack || 'React + Vite + TypeScript + Tailwind CSS';
     design.uiSpec = design.uiSpec || {
       theme: 'light',
       primaryColor: '#3B82F6',

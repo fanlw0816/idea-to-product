@@ -67,9 +67,11 @@ export function box(title: string): void {
   const width = Math.max(title.length + 4, 40);
   const border = chalk.dim('═'.repeat(width));
   const padded = chalk.bold(`  ${title}  `);
-  console.log(`\n${border}`);
+  console.log('');
   console.log(border);
-  console.log(`${border}\n`);
+  console.log(padded);
+  console.log(border);
+  console.log('');
 }
 
 // Convenience wrappers

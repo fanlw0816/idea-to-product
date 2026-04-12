@@ -44,12 +44,85 @@ npx tsx src/cli.ts "I want to build something fun"
 
 # Or random brainstorm
 npx tsx src/cli.ts
+```
 
-# Verbose mode
-npx tsx src/cli.ts -v "Make a tool for developers"
+## Configuration
 
-# Custom output directory
-npx tsx src/cli.ts -o ./my-products "Build a portfolio site"
+Three ways to configure, in priority order: **CLI flags > environment variables > config file > defaults**.
+
+### CLI Flags
+
+```bash
+# API key
+npx tsx src/cli.ts --api-key sk-ant-xxx "Build a todo app"
+
+# Custom model
+npx tsx src/cli.ts --model claude-opus-4-6-20250514 "Build a portfolio"
+
+# Custom API base URL (for proxies, compatible APIs)
+npx tsx src/cli.ts --base-url https://your-proxy.com/v1 "Build a landing page"
+
+# All options
+npx tsx src/cli.ts \
+  --api-key sk-ant-xxx \
+  --model claude-sonnet-4-6-20250514 \
+  --base-url https://your-proxy.com/v1 \
+  --max-tokens 8192 \
+  --temperature 0.7 \
+  -o ./output \
+  -v \
+  "Build a SaaS landing page"
+```
+
+### Environment Variables
+
+```bash
+# API key (required)
+export ANTHROPIC_API_KEY=sk-ant-xxx
+
+# Model (default: claude-sonnet-4-6-20250514)
+export MODEL=claude-opus-4-6-20250514
+# or
+export ANTHROPIC_MODEL=claude-opus-4-6-20250514
+
+# Base URL (for proxies / compatible APIs like Azure, OpenRouter, etc.)
+export BASE_URL=https://your-proxy.com/v1
+# or
+export ANTHROPIC_BASE_URL=https://your-proxy.com/v1
+
+# Max tokens (default: 8192)
+export MAX_TOKENS=16384
+
+# Temperature (default: 0.7)
+export TEMPERATURE=0.9
+```
+
+### Config File
+
+Create `.idea-agent.json` in your project directory (or any parent directory):
+
+```json
+{
+  "apiKey": "sk-ant-xxx",
+  "model": "claude-sonnet-4-6-20250514",
+  "baseUrl": "",
+  "maxTokens": 8192,
+  "temperature": 0.7
+}
+```
+
+Or copy the example: `cp .idea-agent.example.json .idea-agent.json`
+
+### Using Compatible APIs
+
+If you're using a proxy or compatible API (OpenRouter, Azure, etc.), set `--base-url`:
+
+```bash
+# OpenRouter
+npx tsx src/cli.ts --base-url https://openrouter.ai/api/v1 "Build a blog"
+
+# Local Ollama (if Anthropic-compatible)
+npx tsx src/cli.ts --base-url http://localhost:11434 --model local-model "Build a tool"
 ```
 
 ## Architecture
@@ -93,7 +166,8 @@ src/
 │       └── index.ts      # Docs & deployment
 ├── core/
 │   ├── agent.ts          # Base agent class
-│   └── orchestrator.ts   # Pipeline orchestrator
+│   ├── orchestrator.ts   # Pipeline orchestrator
+│   └── config.ts         # Configuration resolver
 ├── types/
 │   └── artifacts.ts      # Type definitions
 ├── utils/
@@ -105,7 +179,7 @@ src/
 ## Requirements
 
 - Node.js 20+
-- Anthropic API key (`ANTHROPIC_API_KEY`)
+- Anthropic API key (or compatible API via `--base-url`)
 
 ## License
 

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 
 export interface AgentConfig {
   name: string;
@@ -8,6 +8,7 @@ export interface AgentConfig {
   temperature?: number;
   systemPrompt: string;
   apiKey?: string;
+  baseUrl?: string;
 }
 
 export abstract class BaseAgent {
@@ -16,9 +17,14 @@ export abstract class BaseAgent {
 
   constructor(config: AgentConfig) {
     this.config = config;
-    this.client = new Anthropic({
+    const clientOptions: ConstructorParameters<typeof Anthropic>[0] = {
       apiKey: config.apiKey || process.env.ANTHROPIC_API_KEY || '',
-    });
+    };
+    // Custom base URL (for proxies, compatible APIs, etc.)
+    if (config.baseUrl) {
+      clientOptions.baseURL = config.baseUrl;
+    }
+    this.client = new Anthropic(clientOptions);
   }
 
   // Core method: send a message and get a response

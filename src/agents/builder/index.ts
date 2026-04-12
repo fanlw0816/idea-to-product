@@ -14,7 +14,7 @@ import type {
   BuildArtifact,
   BuilderSpec,
 } from '../../types/artifacts.js';
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 
@@ -24,6 +24,8 @@ import * as fs from 'fs/promises';
 
 export interface BuilderConfig {
   apiKey?: string;
+  baseUrl?: string;
+  model?: string;
   outputDir: string;
 }
 
@@ -47,10 +49,11 @@ export class DynamicBuilderAgent extends BaseAgent {
       name: 'DynamicBuilderAgent',
       systemPrompt:
         'You are a code generation agent. Given a design specification, you generate complete, production-ready code files.',
-      model: 'claude-sonnet-4-6-20250514',
+      model: config.model,
       maxTokens: 16384,
       temperature: 0.3,
       apiKey: config.apiKey,
+      baseUrl: config.baseUrl,
     });
     this.builderCfg = config;
   }
