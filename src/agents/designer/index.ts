@@ -6,9 +6,13 @@ import type {
   BuilderSpec,
 } from '../../types/artifacts.js';
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
+import type { EventBus } from '../../observability/event-bus.js';
 
 export class DesignerAgent extends BaseAgent {
-  constructor(config: { apiKey?: string; baseUrl?: string; model?: string }) {
+  private bus?: EventBus;
+  private language: string;
+
+  constructor(config: { apiKey?: string; baseUrl?: string; model?: string; eventBus?: EventBus; language?: string }) {
     super({
       name: 'DesignerAgent',
       systemPrompt: `You are an expert product designer and technical architect. Given a product idea, you create a complete design specification including:
@@ -54,12 +58,22 @@ Respond in valid JSON only.`,
       apiKey: config.apiKey,
       baseUrl: config.baseUrl,
     });
+    this.bus = config.eventBus;
+    this.language = config.language || 'en';
   }
 
   async run(idea: IdeaArtifact): Promise<DesignArtifact> {
     logger.info('DESIGNER', `Designing: "${idea.tagline}"`);
 
-    const prompt = `Design the complete technical specification for this product idea:
+    const langInstr = this.language.startsWith('zh')
+      ? 'OUTPUT LANGUAGE: Chinese (中文). All descriptions, names, and text MUST be written in Chinese. JSON keys remain English.'
+      : this.language.startsWith('ja')
+      ? 'OUTPUT LANGUAGE: Japanese (日本語). All descriptions, names, and text MUST be written in Japanese. JSON keys remain English.'
+      : this.language.startsWith('ko')
+      ? 'OUTPUT LANGUAGE: Korean (한국어). All descriptions, names, and text MUST be written in Korean. JSON keys remain English.'
+      : '';
+
+    const prompt = `${langInstr ? langInstr + '\n\n' : ''}Design the complete technical specification for this product idea:
 
 TAGLINE: ${idea.tagline}
 FEATURES: ${idea.features.map((f, i) => `${i + 1}. ${f}`).join('\n')}
@@ -84,9 +98,28 @@ The builderSpecs are CRITICAL — they determine which parallel builder agents w
       8192
     );
 
+    logger.success('DESIGNER', `Full design spec (${response.length} chars):`);
+    console.log(response);
+    console.log('');
+
     // Parse JSON from response
     const jsonStr = this.extractJson(response);
     const design = JSON.parse(jsonStr) as Partial<DesignArtifact>;
+
+    // Emit to event bus
+    if (this.bus) {
+      this.bus.emit({
+        type: 'design_output',
+        phase: 'design',
+        role: 'DESIGNER',
+        content: jsonStr,
+        meta: {
+          pages: design.pages?.length || 0,
+          builders: design.builderSpecs?.length || 0,
+          techStack: design.techStack || '',
+        },
+      });
+    }
 
     // Ensure builderSpecs always includes config
     if (!design.builderSpecs) {

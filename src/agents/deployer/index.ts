@@ -2,6 +2,7 @@ import { BaseAgent } from '../../core/agent.js';
 import { logger } from '../../utils/logger.js';
 import { writeFile, readFile, listFiles, fileExists } from '../../utils/fs-helpers.js';
 import type { IdeaArtifact, DesignArtifact, BuildArtifact, ReviewArtifact, DeployArtifact } from '../../types/artifacts.js';
+import type { EventBus } from '../../observability/event-bus.js';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { exec, spawn } from 'child_process';
@@ -32,8 +33,10 @@ async function waitForServer(url: string, timeoutMs = 15000, intervalMs = 500): 
 
 export class DeployerAgent extends BaseAgent {
   private outputDir: string;
+  private bus?: EventBus;
+  private language: string;
 
-  constructor(config: { apiKey?: string; baseUrl?: string; model?: string; outputDir: string }) {
+  constructor(config: { apiKey?: string; baseUrl?: string; model?: string; outputDir: string; eventBus?: EventBus; language?: string }) {
     super({
       name: 'DeployerAgent',
       systemPrompt: 'You generate README documentation for products. Make it clear, comprehensive, and professional.',
@@ -44,6 +47,8 @@ export class DeployerAgent extends BaseAgent {
       temperature: 0.5,
     });
     this.outputDir = config.outputDir;
+    this.bus = config.eventBus;
+    this.language = config.language || 'en';
   }
 
   async run(input: { idea: IdeaArtifact; design: DesignArtifact; build: BuildArtifact; review: ReviewArtifact }): Promise<DeployArtifact> {
@@ -113,6 +118,17 @@ export class DeployerAgent extends BaseAgent {
     // Generate summary
     const summary = this.generateSummary(idea, design, files);
 
+    // Emit deploy summary to event bus
+    if (this.bus) {
+      this.bus.emit({
+        type: 'deploy_summary',
+        phase: 'deploy',
+        role: 'DEPLOYER',
+        content: summary,
+        meta: { url, files: files.length },
+      });
+    }
+
     return {
       url,
       readmePath,
@@ -142,9 +158,17 @@ export class DeployerAgent extends BaseAgent {
       }
     }
 
+    const langInstr = this.language.startsWith('zh')
+      ? 'OUTPUT LANGUAGE: Chinese (中文). The entire README MUST be written in Chinese.'
+      : this.language.startsWith('ja')
+      ? 'OUTPUT LANGUAGE: Japanese (日本語). The entire README MUST be written in Japanese.'
+      : this.language.startsWith('ko')
+      ? 'OUTPUT LANGUAGE: Korean (한국어). The entire README MUST be written in Korean.'
+      : '';
+
     const response = await this.chat([{
       role: 'user',
-      content: `Generate a comprehensive README.md for this product:
+      content: `${langInstr ? langInstr + '\n\n' : ''}Generate a comprehensive README.md for this product:
 
 PRODUCT: ${idea.tagline}
 FEATURES: ${idea.features.map((f, i) => `${i + 1}. ${f}`).join('\n')}

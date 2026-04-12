@@ -22,6 +22,7 @@ cli
   .option('-b, --base-url <url>', 'API base URL for proxy/compatible API (or set BASE_URL / ANTHROPIC_BASE_URL env)')
   .option('--max-tokens <n>', 'Max tokens per request', undefined)
   .option('--temperature <n>', 'Temperature for generation', undefined)
+  .option('--lang <code>', 'Output language: en, zh, ja, ko, etc. (or set LANGUAGE env)', undefined)
   .action(async (prompt, options) => {
     const cfg = resolveConfig({
       apiKey: options.apiKey,
@@ -29,6 +30,7 @@ cli
       baseUrl: options.baseUrl,
       maxTokens: options.maxTokens ? parseInt(options.maxTokens, 10) : undefined,
       temperature: options.temperature ? parseFloat(options.temperature) : undefined,
+      language: options.lang,
     });
 
     const errors = validateConfig(cfg);
@@ -49,6 +51,7 @@ cli
       baseUrl: cfg.baseUrl,
       maxTokens: cfg.maxTokens,
       temperature: cfg.temperature,
+      language: cfg.language,
     });
 
     try {

@@ -2,6 +2,7 @@ import { BaseAgent } from '../../core/agent.js';
 import { logger } from '../../utils/logger.js';
 import { readFile, writeFile, fileExists, listFiles } from '../../utils/fs-helpers.js';
 import type { IdeaArtifact, DesignArtifact, BuildArtifact, ReviewArtifact, ReviewIssue } from '../../types/artifacts.js';
+import type { EventBus } from '../../observability/event-bus.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
@@ -10,8 +11,10 @@ const execAsync = promisify(exec);
 
 export class ReviewerAgent extends BaseAgent {
   private maxRetries = 3;
+  private bus?: EventBus;
+  private language: string;
 
-  constructor(config: { apiKey?: string; baseUrl?: string; model?: string }) {
+  constructor(config: { apiKey?: string; baseUrl?: string; model?: string; eventBus?: EventBus; language?: string }) {
     super({
       name: 'ReviewerAgent',
       systemPrompt: `You are a senior code reviewer and fixer. Your job:
@@ -35,6 +38,8 @@ When asked to fix errors, respond with file markers:
       maxTokens: 8192,
       temperature: 0.3,
     });
+    this.bus = config.eventBus;
+    this.language = config.language || 'en';
   }
 
   async run(input: { idea: IdeaArtifact; design: DesignArtifact; build: BuildArtifact }): Promise<ReviewArtifact> {
@@ -96,6 +101,28 @@ When asked to fix errors, respond with file markers:
     // Phase 3: Feature completeness check
     logger.info('REVIEWER', 'Checking feature completeness...');
     const featuresComplete = await this.checkFeatureCompleteness(projectDir, design);
+
+    // Emit review findings to event bus
+    if (this.bus) {
+      this.bus.emit({
+        type: 'review_findings',
+        phase: 'review',
+        role: 'REVIEWER',
+        content: issues.length > 0
+          ? issues.map((i) => `[${i.severity}] ${i.file}: ${i.message}`).join('\n')
+          : 'No issues found.',
+        meta: { passed: true, issues: issues.length, fixes: fixes.length, featuresComplete },
+      });
+      for (const fix of fixes) {
+        this.bus.emit({
+          type: 'review_fix',
+          phase: 'review',
+          role: 'REVIEWER',
+          content: fix,
+          meta: {},
+        });
+      }
+    }
 
     return {
       passed: buildOk && !issues.some(i => i.severity === 'error'),
@@ -168,9 +195,17 @@ When asked to fix errors, respond with file markers:
       }
     }
 
+    const langInstr = this.language.startsWith('zh')
+      ? 'OUTPUT LANGUAGE: Chinese (中文). All review comments and fix reasons MUST be in Chinese.'
+      : this.language.startsWith('ja')
+      ? 'OUTPUT LANGUAGE: Japanese (日本語). All review comments and fix reasons MUST be in Japanese.'
+      : this.language.startsWith('ko')
+      ? 'OUTPUT LANGUAGE: Korean (한국어). All review comments and fix reasons MUST be in Korean.'
+      : '';
+
     const response = await this.chat([{
       role: 'user',
-      content: `Build errors:\n${errorContext}\n\nProject files:\n${relevantFiles.map(f => path.relative(projectDir, f)).join('\n')}\n\nKey file contents:\n${JSON.stringify(fileContents).slice(0, 8000)}\n\nFix these errors. Return the FULL corrected file content for each file that needs changes. Format:\n--- FILE: path/to/file ---\n[content]\n--- END FILE ---`,
+      content: `${langInstr ? langInstr + '\n\n' : ''}Build errors:\n${errorContext}\n\nProject files:\n${relevantFiles.map(f => path.relative(projectDir, f)).join('\n')}\n\nKey file contents:\n${JSON.stringify(fileContents).slice(0, 8000)}\n\nFix these errors. Return the FULL corrected file content for each file that needs changes. Format:\n--- FILE: path/to/file ---\n[content]\n--- END FILE ---`,
     }], 8192);
 
     const changes: Array<{ file: string; content: string; reason: string }> = [];

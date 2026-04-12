@@ -11,6 +11,7 @@ export interface AgentRuntimeConfig {
   baseUrl: string;
   maxTokens: number;
   temperature: number;
+  language: string;
 }
 
 // Default models for different agent roles
@@ -48,8 +49,10 @@ function loadConfigFile(): Partial<AgentRuntimeConfig> {
   if (!filePath) return {};
   try {
     const raw = fs.readFileSync(filePath, 'utf-8');
-    // Strip JSONC comments
-    const cleaned = raw.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    // Strip JSONC: first remove /* */ block comments, then strip "//" comment keys
+    const cleaned = raw
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s*"[\/]+".*$/gm, '');
     return JSON.parse(cleaned);
   } catch {
     return {};
@@ -72,6 +75,7 @@ function resolveEnv(): Partial<AgentRuntimeConfig> {
   }
   if (process.env.MAX_TOKENS) result.maxTokens = parseInt(process.env.MAX_TOKENS, 10);
   if (process.env.TEMPERATURE) result.temperature = parseFloat(process.env.TEMPERATURE);
+  if (process.env.LANGUAGE) result.language = process.env.LANGUAGE;
   return result;
 }
 
@@ -81,6 +85,7 @@ export function resolveConfig(cliOptions: {
   baseUrl?: string;
   maxTokens?: number;
   temperature?: number;
+  language?: string;
 }): AgentRuntimeConfig {
   const fileConfig = loadConfigFile();
   const envConfig = resolveEnv();
@@ -107,7 +112,12 @@ export function resolveConfig(cliOptions: {
 
   const temperature = cliOptions.temperature ?? envConfig.temperature ?? fileConfig.temperature ?? 0.7;
 
-  return { apiKey, model, baseUrl, maxTokens, temperature };
+  const language = cliOptions.language
+    || envConfig.language
+    || fileConfig.language
+    || 'en';
+
+  return { apiKey, model, baseUrl, maxTokens, temperature, language };
 }
 
 export function validateConfig(config: AgentRuntimeConfig): string[] {
@@ -125,6 +135,11 @@ export function validateConfig(config: AgentRuntimeConfig): string[] {
 
 export function printConfig(config: AgentRuntimeConfig): void {
   const mask = (key: string) => key.slice(0, 8) + '...' + key.slice(-4);
+  const langLabel = config.language === 'zh' || config.language === 'zh-CN' || config.language === 'zh-CN' ? 'Chinese (中文)'
+    : config.language === 'ja' ? 'Japanese (日本語)'
+    : config.language === 'ko' ? 'Korean (한국어)'
+    : config.language === 'en' ? 'English'
+    : config.language;
   console.log('');
   console.log('┌─────────────────────────────────────────┐');
   console.log('│  Configuration                          │');
@@ -134,6 +149,7 @@ export function printConfig(config: AgentRuntimeConfig): void {
   console.log(`│  Base URL: ${(config.baseUrl || '(default)').padEnd(35)}│`);
   console.log(`│  Max Tokens: ${String(config.maxTokens).padEnd(35)}│`);
   console.log(`│  Temperature: ${String(config.temperature).padEnd(34)}│`);
+  console.log(`│  Language:  ${langLabel.padEnd(35)}│`);
   console.log('└─────────────────────────────────────────┘');
   console.log('');
 }

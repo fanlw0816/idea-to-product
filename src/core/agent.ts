@@ -44,6 +44,23 @@ export abstract class BaseAgent {
     return textContent;
   }
 
+  // Streaming variant — yields text chunks as they arrive
+  protected async *streamChat(messages: MessageParam[], maxTokens?: number): AsyncIterable<string> {
+    const stream = await this.client.messages.create({
+      model: this.config.model || 'claude-sonnet-4-6-20250514',
+      max_tokens: maxTokens || this.config.maxTokens || 8192,
+      temperature: this.config.temperature ?? 0.7,
+      system: this.config.systemPrompt,
+      messages,
+      stream: true,
+    });
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+        yield chunk.delta.text;
+      }
+    }
+  }
+
   // Abstract method that each agent implements
   abstract run(input: any): Promise<any>;
 

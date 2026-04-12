@@ -15,6 +15,7 @@ import type {
   BuilderSpec,
 } from '../../types/artifacts.js';
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
+import type { EventBus } from '../../observability/event-bus.js';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 
@@ -27,6 +28,8 @@ export interface BuilderConfig {
   baseUrl?: string;
   model?: string;
   outputDir: string;
+  eventBus?: EventBus;
+  language?: string;
 }
 
 interface BuilderResult {
@@ -43,6 +46,8 @@ interface BuilderResult {
 
 export class DynamicBuilderAgent extends BaseAgent {
   private builderCfg: BuilderConfig;
+  private bus?: EventBus;
+  private language: string;
 
   constructor(config: BuilderConfig) {
     super({
@@ -56,6 +61,44 @@ export class DynamicBuilderAgent extends BaseAgent {
       baseUrl: config.baseUrl,
     });
     this.builderCfg = config;
+    this.bus = config.eventBus;
+    this.language = config.language || 'en';
+  }
+
+  // Chat with automatic retry when the proxy returns a streaming warning
+  private async chatWithRetry(
+    messages: MessageParam[],
+    maxTokens: number,
+    maxRetries = 2
+  ): Promise<string> {
+    let lastError = '';
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await this.chat(messages, maxTokens);
+        // Detect proxy streaming warning in the response
+        if (response.includes('Streaming is strongly recommended')) {
+          logger.warn(
+            `BUILDER:${this.name}`,
+            `Proxy returned streaming warning (attempt ${attempt + 1}/${maxRetries + 1}), retrying with lower maxTokens...`
+          );
+          lastError = 'Proxy streaming warning';
+          // Reduce token budget on retry
+          maxTokens = Math.max(2048, Math.floor(maxTokens / 2));
+          continue;
+        }
+        return response;
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
+        logger.warn(
+          `BUILDER:${this.name}`,
+          `Attempt ${attempt + 1}/${maxRetries + 1} failed: ${lastError}`
+        );
+        if (attempt < maxRetries) {
+          maxTokens = Math.max(2048, Math.floor(maxTokens / 2));
+        }
+      }
+    }
+    throw new Error(lastError);
   }
 
   // ----------------------------------------------------------------
@@ -149,11 +192,22 @@ export class DynamicBuilderAgent extends BaseAgent {
 
         const prompt = this.buildBuilderPrompt(spec, idea, design, projectDir);
 
-        const tokenBudget = Math.max(16384, spec.files.length * 4096);
-        const response = await this.chat(
+        const tokenBudget = Math.min(8192, spec.files.length * 2048);
+        const response = await this.chatWithRetry(
           [{ role: 'user', content: prompt }],
           tokenBudget
         );
+
+        // Emit builder output to event bus
+        if (this.bus) {
+          this.bus.emit({
+            type: 'builder_output',
+            phase: 'build',
+            role: spec.label,
+            content: response,
+            meta: { files: spec.files, charCount: response.length },
+          });
+        }
 
         // Parse file outputs from the LLM response
         const files = this.parseFileOutputs(response);
@@ -234,7 +288,15 @@ export class DynamicBuilderAgent extends BaseAgent {
         ? `\nDATA MODEL:\n${JSON.stringify(design.dataModel, null, 2)}`
         : '';
 
-    return `You are the ${spec.label} (${spec.type}). Generate complete, production-ready code for these files:
+    const langInstr = this.language.startsWith('zh')
+      ? 'OUTPUT LANGUAGE: Chinese (中文). All user-facing text, comments, and UI labels in the generated code MUST be in Chinese. Code variables and function names remain in English.'
+      : this.language.startsWith('ja')
+      ? 'OUTPUT LANGUAGE: Japanese (日本語). All user-facing text, comments, and UI labels in the generated code MUST be in Japanese. Code variables and function names remain in English.'
+      : this.language.startsWith('ko')
+      ? 'OUTPUT LANGUAGE: Korean (한국어). All user-facing text, comments, and UI labels in the generated code MUST be in Korean. Code variables and function names remain in English.'
+      : '';
+
+    return `${langInstr ? langInstr + '\n\n' : ''}You are the ${spec.label} (${spec.type}). Generate complete, production-ready code for these files:
 
 FILES TO CREATE:
 ${fileSection}
@@ -258,7 +320,7 @@ RULES:
 5. Include proper error handling, types, and comments.
 6. Do NOT skip or abbreviate any file content.
 7. For config builder: generate package.json with all needed dependencies, vite.config.ts, index.html, tsconfig.json, etc.
-8. Do NOT wrap file content in markdown code blocks — put the raw content between the FILE markers.`;
+8. Do NOT wrap file content in markdown code blocks — put the raw content between the FILE markers.${langInstr}`;
   }
 
   // ----------------------------------------------------------------

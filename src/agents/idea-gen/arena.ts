@@ -1,6 +1,7 @@
 // ============================================================
-// IdeaGen Arena — 6-agent structured debate for product idea
-// generation. Three rounds: Storm → Attack → Synthesis.
+// IdeaGen Arena — group-chat style multi-agent debate.
+// Moderator opens, roles respond naturally to each other,
+// moderator steers every N turns, then converges to a conclusion.
 // ============================================================
 
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
@@ -8,31 +9,43 @@ import { BaseAgent } from '../../core/agent.js';
 import { DEFAULT_MODELS } from '../../core/config.js';
 import { logger } from '../../utils/logger.js';
 import type { IdeaArtifact } from '../../types/artifacts.js';
-import { DEBATE_ROLES, type DebateRole } from './roles.js';
+import { DEBATE_ROLES } from './roles.js';
+import type { EventBus } from '../../observability/event-bus.js';
 
 export interface IdeaGenConfig {
   apiKey?: string;
   baseUrl?: string;
   model?: string;
   verbose: boolean;
+  eventBus?: EventBus;
+  language?: string;
 }
 
-interface DebateMessage {
-  from: string;
+interface TranscriptEntry {
+  turn: number;
+  role: string;
   content: string;
-  targetType?: string;
-  messageType: 'pitch' | 'attack' | 'defense' | 'concession' | 'synthesis';
+  messageType: 'pitch' | 'speak' | 'defense' | 'moderator' | 'synthesis';
+}
+
+interface SpeakerState {
+  counts: Record<string, number>;
+  lastSpokenAt: Record<string, number>;
 }
 
 export class IdeaGenArena extends BaseAgent {
-  private debateLog: DebateMessage[] = [];
+  private transcript: TranscriptEntry[] = [];
   private arenaConfig: IdeaGenConfig;
+  private bus?: EventBus;
+
+  private readonly maxTurns = 18;
+  private readonly modInterval = 4;
 
   constructor(config: IdeaGenConfig) {
     super({
       name: 'IdeaGenArena',
       systemPrompt:
-        'You are the moderator of a creative debate arena. You facilitate a structured debate between 6 distinct personas to generate and refine product ideas.',
+        'You are the moderator of a creative debate arena.',
       apiKey: config.apiKey,
       baseUrl: config.baseUrl,
       model: config.model,
@@ -40,6 +53,7 @@ export class IdeaGenArena extends BaseAgent {
       temperature: 0.9,
     });
     this.arenaConfig = config;
+    this.bus = config.eventBus;
   }
 
   // Get the effective model name for API calls
@@ -47,8 +61,23 @@ export class IdeaGenArena extends BaseAgent {
     return this.config.model || DEFAULT_MODELS.ideaGen;
   }
 
+  // Language instruction for system prompts
+  private langInstruction(): string {
+    const lang = this.arenaConfig.language || 'en';
+    if (lang === 'zh' || lang === 'zh-CN' || lang.startsWith('zh')) {
+      return 'OUTPUT LANGUAGE: Chinese (中文). Every single response MUST be written entirely in Chinese. Do not use English except for technical terms that have no common Chinese equivalent.';
+    }
+    if (lang === 'ja' || lang.startsWith('ja')) {
+      return 'OUTPUT LANGUAGE: Japanese (日本語). Every single response MUST be written entirely in Japanese.';
+    }
+    if (lang === 'ko' || lang.startsWith('ko')) {
+      return 'OUTPUT LANGUAGE: Korean (한국어). Every single response MUST be written entirely in Korean.';
+    }
+    return '';
+  }
+
   // -------------------------------------------------------
-  // Main entry: run the full debate and return the winning idea
+  // Main entry: group chat debate
   // -------------------------------------------------------
   async run(input?: unknown): Promise<IdeaArtifact> {
     const prompt =
@@ -56,123 +85,479 @@ export class IdeaGenArena extends BaseAgent {
         ? input
         : 'Generate a creative, feasible MVP product idea that can be built as a web application';
 
-    logger.box('CREATIVE ARENA: 6-Agent Debate');
-    logger.info(
-      'ARENA',
-      `Prompt: ${prompt}`
-    );
+    logger.box('CREATIVE ARENA: Group Chat Debate');
+    logger.info('ARENA', `Topic: ${prompt}`);
     logger.info(
       'ROLES',
       DEBATE_ROLES.map((r) => `${r.codeName} (${r.name})`).join(', ')
     );
 
-    // Round 1: Each role pitches ideas from their perspective (PARALLEL)
-    logger.info('ROUND 1', 'Storm: Each role pitches ideas...');
-    const pitches = await this.round1Pitches(prompt);
-    this.debateLog.push(...pitches);
+    // Turn 0: Moderator opens
+    logger.info('TURN 0', 'Moderator opening the debate...');
+    const opening = await this.moderatorOpening(prompt);
+    this.addEntry(0, 'Moderator', opening, 'moderator');
 
-    // Round 2: Attack & Defense (PARALLEL attacks)
-    logger.info('ROUND 2', 'Attack: Roles critique each pitch...');
-    const attacks = await this.round2Attacks(pitches);
-    this.debateLog.push(...attacks);
+    // Turns 1..maxTurns: Group chat loop
+    logger.info('GROUP CHAT', `Starting ${this.maxTurns} turns of debate...`);
+    const speakerState: SpeakerState = {
+      counts: {},
+      lastSpokenAt: {},
+    };
+    for (const r of DEBATE_ROLES) {
+      speakerState.counts[r.codeName] = 0;
+      speakerState.lastSpokenAt[r.codeName] = -1;
+    }
 
-    // Round 3: Synthesis & Convergence
-    logger.info('ROUND 3', 'Synthesis: Converging on the best idea...');
-    const synthesis = await this.round3Synthesis(pitches, attacks);
+    await this.groupChatLoop(prompt, speakerState);
 
-    // Score & select winner
+    // Final synthesis
+    logger.info('SYNTHESIS', 'Moderator converging on final idea...');
+    const synthesis = await this.finalSynthesis();
+
+    // Score
     const winner = await this.scoreAndSelect(synthesis);
 
-    // Format final output
+    // Format
     return this.formatIdea(winner);
   }
 
   // -------------------------------------------------------
-  // Round 1: All 6 roles pitch in parallel
+  // Streaming helper — FIXED to use the passed system prompt
   // -------------------------------------------------------
-  private async round1Pitches(userPrompt: string): Promise<DebateMessage[]> {
-    const pitchPromises = DEBATE_ROLES.map(async (role) => {
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 2048,
-        temperature: 0.9,
-        system: `${role.systemPrompt}\n\nYou are in Round 1: Pitch your best product idea (1-3 ideas) based on your unique perspective. Each idea should include: name, one-line description, why it's valuable.`,
-        messages: [
-          { role: 'user' as const, content: `Debate prompt: ${userPrompt}` },
-        ],
-      });
-      const text = response.content
-        .filter((b) => b.type === 'text')
-        .map((b) => (b as any).text)
-        .join('\n');
-      logger.info(role.codeName, `Pitch: ${text.substring(0, 100)}...`);
-      return {
-        from: role.codeName,
-        content: text,
-        messageType: 'pitch' as const,
-      };
-    });
-    return Promise.all(pitchPromises);
-  }
-
-  // -------------------------------------------------------
-  // Round 2: Each role attacks the OTHER roles' pitches (parallel)
-  // -------------------------------------------------------
-  private async round2Attacks(
-    pitches: DebateMessage[]
-  ): Promise<DebateMessage[]> {
-    const attackPromises = DEBATE_ROLES.map(async (role) => {
-      const otherPitches = pitches.filter((p) => p.from !== role.codeName);
-      const otherPitchesText = otherPitches
-        .map((p) => `[${p.from}]: ${p.content}`)
-        .join('\n---\n');
-
-      const response = await this.client.messages.create({
-        model: this.model,
-        max_tokens: 2048,
-        temperature: 0.8,
-        system: `${role.systemPrompt}\n\nYou are in Round 2: Attack the other roles' pitches. Point out flaws, competition, feasibility issues, scope problems, missing insights. Be specific and critical. If an idea is genuinely good, acknowledge it briefly but still challenge it.`,
-        messages: [
-          {
-            role: 'user' as const,
-            content: `Here are the pitches to critique:\n${otherPitchesText}`,
-          },
-        ],
-      });
-      const text = response.content
-        .filter((b) => b.type === 'text')
-        .map((b) => (b as any).text)
-        .join('\n');
-      logger.info(role.codeName, `Attack: ${text.substring(0, 100)}...`);
-      return {
-        from: role.codeName,
-        content: text,
-        messageType: 'attack' as const,
-      };
-    });
-    return Promise.all(attackPromises);
-  }
-
-  // -------------------------------------------------------
-  // Round 3: Synthesize the best idea from the full debate
-  // -------------------------------------------------------
-  private async round3Synthesis(
-    pitches: DebateMessage[],
-    attacks: DebateMessage[]
+  private async streamResponse(
+    role: string,
+    round: string,
+    system: string,
+    userContent: string,
+    maxTokens: number,
+    temperature: number
   ): Promise<string> {
-    const allContent = [...pitches, ...attacks]
-      .map((m) => `[${m.from}] (${m.messageType}):\n${m.content}`)
+    let text = '';
+    logger.info(role, `▶ ${round}...`);
+    process.stdout.write('\n');
+
+    try {
+      const stream = await this.client.messages.create({
+        model: this.model,
+        max_tokens: maxTokens,
+        temperature,
+        system,
+        messages: [{ role: 'user' as const, content: userContent }],
+        stream: true,
+      });
+      for await (const chunk of stream) {
+        if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+          process.stdout.write(chunk.delta.text);
+          text += chunk.delta.text;
+        }
+      }
+    } catch {
+      // Streaming not supported by proxy — fall back to non-streaming
+      const response = await this.client.messages.create({
+        model: this.model,
+        max_tokens: maxTokens,
+        temperature,
+        system,
+        messages: [{ role: 'user' as const, content: userContent }],
+      });
+      text = response.content
+        .filter((b) => b.type === 'text')
+        .map((b) => (b as any).text)
+        .join('\n');
+      logger.success(role, `Response (${text.length} chars):`);
+      console.log(text);
+      console.log('');
+    }
+
+    process.stdout.write('\n\n');
+    logger.success(role, `${round} complete (${text.length} chars)`);
+    return text;
+  }
+
+  // -------------------------------------------------------
+  // Transcript management
+  // -------------------------------------------------------
+  private addEntry(
+    turn: number,
+    role: string,
+    content: string,
+    messageType: TranscriptEntry['messageType']
+  ): void {
+    this.transcript.push({ turn, role, content, messageType });
+  }
+
+  private formatTranscript(maxEntries?: number): string {
+    const entries =
+      maxEntries !== undefined
+        ? this.transcript.slice(-maxEntries)
+        : this.transcript;
+
+    return entries
+      .map(
+        (e) =>
+          `[Turn ${e.turn}] ${e.role}: ${e.content}`
+      )
       .join('\n\n');
+  }
+
+  private getTruncatedTranscript(maxChars = 6000): string {
+    const full = this.formatTranscript();
+    if (full.length <= maxChars) return full;
+
+    // Keep opening + recent entries
+    const opening = this.transcript[0];
+    const recent = this.transcript.slice(-12);
+    const entries = opening && !recent.includes(opening)
+      ? [opening, ...recent]
+      : recent;
+
+    return entries
+      .map((e) => `[Turn ${e.turn}] ${e.role}: ${e.content}`)
+      .join('\n\n');
+  }
+
+  private getPhase(turn: number): string {
+    const third = Math.ceil(this.maxTurns / 3);
+    if (turn <= third) return 'opening';
+    if (turn <= third * 2) return 'debate';
+    return 'convergence';
+  }
+
+  private getPhaseInstruction(phase: string): string {
+    switch (phase) {
+      case 'opening':
+        return 'This is the opening phase. Pitch your perspective on the product idea from your unique viewpoint.';
+      case 'debate':
+        return 'The debate is underway. Challenge other positions, defend your own, respond to specific points made by others, and find common ground.';
+      case 'convergence':
+        return 'We are converging. Focus on the strongest elements from the discussion. What should the final idea include and what should be cut?';
+      default:
+        return '';
+    }
+  }
+
+  // -------------------------------------------------------
+  // Turn 0: Moderator Opening
+  // -------------------------------------------------------
+  private async moderatorOpening(userPrompt: string): Promise<string> {
+    const roleList = DEBATE_ROLES.map(
+      (r) => `- ${r.name} (${r.codeName}): ${r.debateStyle}`
+    ).join('\n');
+
+    const langInstr = this.langInstruction();
+
+    const systemPrompt = `You are the moderator of a creative debate arena. You facilitate a structured debate between 6 distinct personas to generate and refine product ideas.
+
+Your role:
+1. Open the discussion by introducing the topic and the participants
+2. Observe the conversation, identify key points of agreement and disagreement
+3. Interject periodically to steer the discussion back on track
+4. Guide the group toward convergence on the best idea
+5. Produce a final synthesized product idea`;
+
+    const text = await this.streamResponse(
+      'Moderator',
+      'opening',
+      `${systemPrompt}${langInstr ? '\n\n' + langInstr : ''}`,
+      `Welcome to the Creative Debate Arena. Today's topic: ${userPrompt}
+
+The participants are:
+${roleList}
+
+Please open the debate. Introduce the topic, briefly mention each participant's lens, and invite the first speaker. Keep it concise (100-200 words).`,
+      2048,
+      0.7
+    );
+
+    if (this.bus) {
+      this.bus.emit({
+        type: 'role_pitch',
+        phase: 'idea',
+        role: 'Moderator',
+        content: text,
+        meta: { charCount: text.length },
+      });
+    }
+
+    return text;
+  }
+
+  // -------------------------------------------------------
+  // Single role turn — reads full transcript, responds naturally
+  // -------------------------------------------------------
+  private async roleTurn(
+    roleCodeName: string,
+    turn: number
+  ): Promise<string> {
+    const debateRole = DEBATE_ROLES.find((r) => r.codeName === roleCodeName);
+    if (!debateRole) {
+      throw new Error(`Unknown role: ${roleCodeName}`);
+    }
+
+    const phase = this.getPhase(turn);
+    const phaseInstruction = this.getPhaseInstruction(phase);
+    const langInstr = this.langInstruction();
+
+    const systemPrompt = `${debateRole.systemPrompt}
+
+${langInstr}
+
+You are participating in a group chat debate about a product idea. You are ONE participant — ${debateRole.name} (${roleCodeName}).
+
+RULES:
+1. Only speak for yourself. Never simulate, summarize, or speak on behalf of other roles.
+2. You can address specific roles by name (e.g., "TrendHunter, you're missing...").
+3. You can build on points made by others, challenge them, or introduce new angles.
+4. Keep your response concise (200-500 words). This is a conversation, not an essay.
+5. If you have nothing new to add, say so briefly and yield the floor.
+
+CURRENT PHASE: ${phase}
+${phaseInstruction}`;
+
+    const transcriptText = this.getTruncatedTranscript();
+    const userContent = `--- Group Chat Transcript (${this.transcript.length} entries so far) ---
+
+${transcriptText}
+
+---
+
+You are ${debateRole.name} (${roleCodeName}). It's your turn to speak (Turn ${turn}).
+Read the transcript above and respond naturally. Address other roles by name when relevant.`;
+
+    const text = await this.streamResponse(
+      roleCodeName,
+      `turn ${turn}`,
+      systemPrompt,
+      userContent,
+      2048,
+      phase === 'convergence' ? 0.7 : 0.9
+    );
+
+    return text;
+  }
+
+  // -------------------------------------------------------
+  // Moderator interjection — steers discussion every N turns
+  // -------------------------------------------------------
+  private async moderatorInterjection(turn: number): Promise<{
+    message: string;
+    nextSpeaker: string;
+  }> {
+    const langInstr = this.langInstruction();
+    const roleNames = DEBATE_ROLES.map((r) => r.codeName).join(', ');
+    const recentTranscript = this.formatTranscript(10);
+
+    const systemPrompt = `You are the moderator of a creative debate arena. Your job is to:
+1. Briefly summarize where the debate stands
+2. Identify the most important unresolved question
+3. Direct a specific role to address it
+4. Nominate who should speak next`;
+
+    const text = await this.streamResponse(
+      'Moderator',
+      `steering (turn ${turn})`,
+      `${systemPrompt}${langInstr ? '\n\n' + langInstr : ''}`,
+      `The group chat debate has reached turn ${turn}. Here is the recent conversation:
+
+---
+${recentTranscript}
+---
+
+All available roles: ${roleNames}
+
+Please:
+1. Summarize where the debate stands (2-3 sentences)
+2. Identify the most important unresolved question
+3. Nominate the NEXT speaker from the available roles (pick someone who hasn't spoken recently and has a relevant perspective)
+4. Give a brief steering message to the group
+
+End your response with: NEXT_SPEAKER: {codeName}`,
+      1024,
+      0.5
+    );
+
+    // Extract next speaker
+    const nextMatch = text.match(/NEXT_SPEAKER:\s*(\w+)/i);
+    const nextSpeaker = nextMatch ? nextMatch[1] : this.heuristicNextSpeaker();
+
+    return { message: text, nextSpeaker };
+  }
+
+  // -------------------------------------------------------
+  // Heuristic speaker selection (zero API calls)
+  // -------------------------------------------------------
+  private heuristicNextSpeaker(
+    speakerState?: SpeakerState
+  ): string {
+    const roleNames = DEBATE_ROLES.map((r) => r.codeName);
+
+    if (!speakerState) {
+      // Fallback: just rotate through roles
+      const spokenCount = this.transcript.filter(
+        (e) => e.role !== 'Moderator'
+      ).length;
+      return roleNames[spokenCount % roleNames.length];
+    }
+
+    // Find roles that spoke least recently
+    const sorted = [...roleNames].sort(
+      (a, b) =>
+        (speakerState.lastSpokenAt[a] ?? -1) -
+        (speakerState.lastSpokenAt[b] ?? -1)
+    );
+
+    // Among the 2 least-recent speakers, pick the one with fewer total turns
+    const candidates = sorted.slice(0, 2);
+    candidates.sort(
+      (a, b) =>
+        (speakerState.counts[a] ?? 0) - (speakerState.counts[b] ?? 0)
+    );
+
+    return candidates[0];
+  }
+
+  // -------------------------------------------------------
+  // Main group chat loop
+  // -------------------------------------------------------
+  private async groupChatLoop(
+    userPrompt: string,
+    speakerState: SpeakerState
+  ): Promise<void> {
+    let currentSpeakerIdx = 0;
+    let modTurnsUsed = 0;
+
+    for (let turn = 1; turn <= this.maxTurns; turn++) {
+      // Moderator interjection every modInterval turns
+      if (turn > 1 && turn % this.modInterval === 1) {
+        logger.info('MODERATOR', `Interjecting at turn ${turn}...`);
+        const interjection = await this.moderatorInterjection(turn);
+        this.addEntry(turn, 'Moderator', interjection.message, 'moderator');
+        modTurnsUsed++;
+
+        if (this.bus) {
+          this.bus.emit({
+            type: 'moderator_summary',
+            phase: 'idea',
+            role: 'Moderator',
+            content: interjection.message,
+            meta: { turn, nextSpeaker: interjection.nextSpeaker },
+          });
+        }
+
+        // Use moderator's nominated speaker, or fall back to heuristic
+        const nominatedIdx = DEBATE_ROLES.findIndex(
+          (r) => r.codeName === interjection.nextSpeaker
+        );
+        if (nominatedIdx >= 0) {
+          currentSpeakerIdx = nominatedIdx;
+        } else {
+          // Fall back to heuristic using current speaker state
+          const fallbackRole = this.heuristicNextSpeaker(speakerState);
+          const fallbackIdx = DEBATE_ROLES.findIndex(
+            (r) => r.codeName === fallbackRole
+          );
+          if (fallbackIdx >= 0) {
+            currentSpeakerIdx = fallbackIdx;
+          }
+        }
+      }
+
+      // Select speaker via heuristic
+      const role = DEBATE_ROLES[currentSpeakerIdx % DEBATE_ROLES.length];
+
+      // Emit event
+      if (this.bus) {
+        const eventType =
+          turn <= 6 ? 'role_pitch' : 'role_speak';
+        this.bus.emit({
+          type: eventType,
+          phase: 'idea',
+          role: role.codeName,
+          content: '', // content filled after turn completes
+          meta: { turn, phase: this.getPhase(turn) },
+        });
+      }
+
+      logger.info(
+        `TURN ${turn}/${this.maxTurns}`,
+        `${role.name} (${role.codeName}) speaking...`
+      );
+
+      const content = await this.roleTurn(role.codeName, turn);
+
+      this.addEntry(
+        turn,
+        role.codeName,
+        content,
+        turn <= 6 ? 'pitch' : 'speak'
+      );
+
+      // Update speaker state
+      speakerState.counts[role.codeName] =
+        (speakerState.counts[role.codeName] ?? 0) + 1;
+      speakerState.lastSpokenAt[role.codeName] = turn;
+
+      // Move to next speaker (skip the one that just spoke)
+      currentSpeakerIdx = (currentSpeakerIdx + 1) % DEBATE_ROLES.length;
+      // Skip if this role already spoke most recently (avoid back-to-back from moderator steering)
+      if (
+        currentSpeakerIdx < DEBATE_ROLES.length &&
+        speakerState.lastSpokenAt[DEBATE_ROLES[currentSpeakerIdx].codeName] === turn
+      ) {
+        currentSpeakerIdx = (currentSpeakerIdx + 1) % DEBATE_ROLES.length;
+      }
+    }
+  }
+
+  // -------------------------------------------------------
+  // Final synthesis — moderator reads full transcript and concludes
+  // -------------------------------------------------------
+  private async finalSynthesis(): Promise<string> {
+    const fullTranscript = this.formatTranscript();
+    const langInstr = this.langInstruction();
 
     const response = await this.chat(
       [
         {
           role: 'user' as const,
-          content: `Here is the complete debate transcript:\n\n${allContent}\n\nSynthesize the best product idea from this debate. Extract the strongest elements, resolve contradictions, and present ONE refined idea. The idea must be:\n1. A clear MVP scope (buildable in days, not months)\n2. Genuinely useful or interesting\n3. Technically feasible as a web app\n4. Differentiated from existing products\n\nOutput format:\n- Tagline: one-line description\n- Features: 3-5 core features\n- Target User: who would use this\n- Key Insights: key insights from the debate\n- Confidence: 0.0-1.0`,
+          content: `You are the moderator. The group chat debate is complete.
+
+${langInstr ? langInstr + '\n\n' : ''}Full debate transcript (${this.transcript.length} turns):
+
+${fullTranscript}
+
+Synthesize the best product idea from this debate. Extract the strongest elements, resolve contradictions, and present ONE refined idea. The idea must be:
+1. A clear MVP scope (buildable in days, not months)
+2. Genuinely useful or interesting
+3. Technically feasible as a web app
+4. Differentiated from existing products
+
+Output format:
+- Tagline: one-line description
+- Features: 3-5 core features
+- Target User: who would use this
+- Key Insights: key insights from the debate
+- Confidence: 0.0-1.0`,
         },
       ],
       4096
     );
+
+    logger.success('SYNTHESIS', `Final idea (${response.length} chars):`);
+    console.log(response);
+    console.log('');
+
+    this.addEntry(this.maxTurns + 1, 'Moderator', response, 'synthesis');
+
+    if (this.bus) {
+      this.bus.emit({
+        type: 'synthesis',
+        phase: 'idea',
+        role: 'Moderator',
+        content: response,
+        meta: { charCount: response.length },
+      });
+    }
 
     return response;
   }
@@ -200,6 +585,15 @@ export class IdeaGenArena extends BaseAgent {
         'SCORING',
         `Scores: ${JSON.stringify(scores)}`
       );
+      if (this.bus) {
+        this.bus.emit({
+          type: 'scoring',
+          phase: 'idea',
+          role: 'Scorer',
+          content: JSON.stringify(scores),
+          meta: { ...scores },
+        });
+      }
       return { synthesis, scores };
     } catch {
       logger.warn('SCORING', 'Failed to parse scores — using empty scores');
@@ -215,7 +609,6 @@ export class IdeaGenArena extends BaseAgent {
   ): IdeaArtifact {
     const s = result.synthesis;
 
-    // Parse the synthesis into structured format
     const taglineMatch = s.match(/[-*]?\s*Tagline:\s*(.+)/i);
     const featuresMatch = s.match(
       /[-*]?\s*Features?:\s*([\s\S]*?)(?:[-*]?\s*(?:Target|Key|Confidence|User))/i
@@ -262,7 +655,7 @@ export class IdeaGenArena extends BaseAgent {
         : 'N/A';
 
     const debateSummary =
-      `Synthesized from 6-role debate. ` +
+      `Synthesized from group chat debate (${this.transcript.length} turns). ` +
       `Scores: ${JSON.stringify(result.scores)}. ` +
       `Avg: ${avgScore}.`;
 
@@ -276,8 +669,12 @@ export class IdeaGenArena extends BaseAgent {
     };
   }
 
-  // Expose the full debate log for debugging/inspection
-  getDebateLog(): DebateMessage[] {
-    return [...this.debateLog];
+  // Expose the full transcript for debugging/inspection
+  getDebateLog(): TranscriptEntry[] {
+    return [...this.transcript];
+  }
+
+  getTranscript(): TranscriptEntry[] {
+    return [...this.transcript];
   }
 }
