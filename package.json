@@ -1,0 +1,27 @@
+{
+  "name": "idea-to-product",
+  "version": "0.1.0",
+  "description": "Autonomous idea-to-product agent system — from brainstorm to shipped product, zero human intervention.",
+  "type": "module",
+  "bin": {
+    "idea-to-product": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "commander": "^13.1.0",
+    "chalk": "^5.4.1",
+    "ora": "^8.2.0",
+    "boxen": "^8.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "tsx": "^4.19.2",
+    "@types/node": "^22.13.0"
+  }
+}
