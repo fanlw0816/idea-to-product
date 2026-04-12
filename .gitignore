@@ -5,3 +5,5 @@ dist/
 output/
 .idea-state/
 *.log
+.idea-agent.json
+docs/superpowers
