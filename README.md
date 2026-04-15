@@ -2,6 +2,8 @@
 
 Autonomous idea-to-product agent system. From brainstorm to shipped product, zero human intervention.
 
+> [中文文档](README_CN.md) | [架构图](docs/architecture.svg) | [中文架构图](docs/architecture-cn.svg)
+
 ## How It Works
 
 ```
@@ -29,6 +31,40 @@ User triggers ("I need a product idea")
     ▼
   DONE — Complete, runnable product
 ```
+
+## Architecture
+
+![Architecture Diagram](docs/architecture.svg)
+
+### IdeaGen Arena: Multi-Agent Group Chat
+
+The core innovation is a **hybrid speaker selection mechanism** that makes the Arena feel like a natural group chat, not a round-robin reading session.
+
+```
+After each role speaks:
+  │
+  ├─ Priority 1: Mention detected?  → @RoleName / "RoleName, ..."  → that role speaks
+  │
+  ├─ Priority 2: Moderator steer?   → every 5 turns, moderator suggests who speaks
+  │
+  └─ Priority 3: Heuristic          → least recent speaker, balanced count
+```
+
+This means:
+- If **TrendHunter** says *"Engineer, you're ignoring the market reality..."*, the next turn automatically goes to **Engineer**
+- If the moderator senses the discussion is running off track, they can **steer** and suggest a specific role
+- If neither applies, the system falls back to **balanced round-robin**
+
+Roles are also instructed to **explicitly name** who they want to respond:
+> "Minimalist, your reduction misses the network effect. @UserVoice, what do real users actually need here?"
+
+### Convergence
+
+The discussion naturally converges when:
+- **3+ consecutive silent turns**: roles say "I agree" with no new content → early break
+- **24 turns max**: soft limit prevents runaway discussions
+
+The moderator then produces a **final synthesis**, extracting the strongest elements from all perspectives and resolving contradictions into one refined product idea.
 
 ## Quick Start
 
@@ -125,16 +161,54 @@ npx tsx src/cli.ts --base-url https://openrouter.ai/api/v1 "Build a blog"
 npx tsx src/cli.ts --base-url http://localhost:11434 --model local-model "Build a tool"
 ```
 
-## Architecture
+### Language Support
+
+Set the output language for **all pipeline stages**: role discussions, design specs, code comments, reviews, and README.
+
+```bash
+# Chinese
+npx tsx src/cli.ts --lang zh "Build a todo app"
+
+# Japanese
+npx tsx src/cli.ts --lang ja "Build a portfolio"
+
+# Korean
+npx tsx src/cli.ts --lang ko "Build a landing page"
+
+# English (default)
+npx tsx src/cli.ts --lang en "Build a blog"
+```
+
+Or via environment variable:
+
+```bash
+export LANGUAGE=zh
+```
+
+Supported languages: `en` (default), `zh` / `zh-CN`, `ja`, `ko`. When set to Chinese, every role in the Arena debates in Chinese, the Designer writes specs in Chinese, and all generated docs are in Chinese.
+
+## Pipeline Architecture
 
 | Agent | Role | Parallel? |
 |-------|------|-----------|
-| **IdeaGen Arena** | 6-role creative debate | Internal parallel |
+| **IdeaGen Arena** | 6-role group chat with hybrid speaker selection | Internal parallel |
 | **Designer** | Tech architecture & specs | Sequential |
 | **Dynamic Builders** | Code generation | Parallel (per spec) |
 | **IntegrationAgent** | Merge builder outputs | Sequential |
 | **Reviewer** | Build, test, auto-fix | Sequential |
 | **Deployer** | Docs, dev server | Sequential |
+
+### Hybrid Speaker Selection Details
+
+The Arena uses a 3-tier speaker selection system:
+
+| Tier | Trigger | Example |
+|------|---------|---------|
+| **1. Mention** | Role explicitly names another | `"Engineer, you're wrong about..."` → Engineer speaks |
+| **2. Moderator** | Every 5 turns, moderator suggests | `"NEXT: UserVoice — we need user validation"` |
+| **3. Heuristic** | Fallback: least recent + balanced | Rotates among underrepresented roles |
+
+This creates natural conversation flow: roles can interrupt and respond to each other, while the moderator maintains direction without dictating every turn.
 
 ### Dynamic Builder Spawning
 
@@ -154,10 +228,10 @@ Each builder runs in parallel, generating its assigned files simultaneously.
 src/
 ├── agents/
 │   ├── idea-gen/
-│   │   ├── arena.ts      # 6-role debate arena
-│   │   └── roles.ts      # Role definitions
+│   │   ├── arena.ts      # Multi-agent group chat with hybrid speaker selection
+│   │   └── roles.ts      # 6 role definitions (TrendHunter, UserVoice, etc.)
 │   ├── designer/
-│   │   └── index.ts      # Product design
+│   │   └── index.ts      # Product design & tech specs
 │   ├── builder/
 │   │   └── index.ts      # Dynamic parallel builders
 │   ├── reviewer/
@@ -167,11 +241,15 @@ src/
 ├── core/
 │   ├── agent.ts          # Base agent class
 │   ├── orchestrator.ts   # Pipeline orchestrator
-│   └── config.ts         # Configuration resolver
+│   └── config.ts         # Configuration resolver (API key, model, language)
+├── observability/
+│   ├── event-bus.ts      # In-memory event hub with JSONL persistence
+│   ├── terminal-formatter.ts  # Real-time terminal streaming display
+│   └── report-generator.ts    # Persistent Markdown reports
 ├── types/
 │   └── artifacts.ts      # Type definitions
 ├── utils/
-│   ├── logger.ts         # Logging
+│   ├── logger.ts         # Structured logging
 │   └── fs-helpers.ts     # File operations
 └── cli.ts                # CLI entry point
 ```

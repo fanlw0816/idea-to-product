@@ -1,0 +1,342 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1450" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="pipelineGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="arenaGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="roleGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="roleGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="roleGrad3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="roleGrad4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+    <linearGradient id="roleGrad5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="roleGrad6" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="modGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="triggerGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14b8a6"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="heuristicGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <!-- Drop shadow filter -->
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="shadowSm" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <!-- Arrow marker -->
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowBright" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="1450" fill="url(#bg)" rx="12"/>
+
+  <!-- ===== TITLE ===== -->
+  <text x="600" y="48" text-anchor="middle" fill="#f1f5f9" font-size="28" font-weight="700">Idea-to-Product Architecture</text>
+  <text x="600" y="74" text-anchor="middle" fill="#94a3b8" font-size="14">Multi-Agent Group Chat Arena with Hybrid Speaker Selection</text>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 1: OVERALL PIPELINE                                     -->
+  <!-- ================================================================ -->
+  <text x="40" y="120" fill="#6366f1" font-size="16" font-weight="600">PIPELINE OVERVIEW</text>
+  <line x1="40" y1="128" x2="1160" y2="128" stroke="#334155" stroke-width="1"/>
+
+  <!-- Pipeline boxes -->
+  <!-- User Trigger -->
+  <rect x="40" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="105" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">User</text>
+  <text x="105" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">Trigger</text>
+  <line x1="170" y1="172" x2="218" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Arena -->
+  <rect x="220" y="148" width="130" height="48" rx="10" fill="#0ea5e9" opacity="0.8" filter="url(#shadowSm)"/>
+  <text x="285" y="168" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">IdeaGen</text>
+  <text x="285" y="184" text-anchor="middle" fill="#e0f2fe" font-size="11">Arena</text>
+  <line x1="350" y1="172" x2="398" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Designer -->
+  <rect x="400" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="465" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">Designer</text>
+  <text x="465" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">Spec</text>
+  <line x1="530" y1="172" x2="578" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Builders -->
+  <rect x="580" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="645" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">Builders</text>
+  <text x="645" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">Parallel</text>
+  <line x1="710" y1="172" x2="758" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reviewer -->
+  <rect x="760" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="825" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">Reviewer</text>
+  <text x="825" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">Test &amp; Fix</text>
+  <line x1="890" y1="172" x2="938" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Deployer -->
+  <rect x="940" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="1005" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">Deployer</text>
+  <text x="1005" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">Ship</text>
+
+  <!-- Done star -->
+  <text x="1130" y="178" text-anchor="middle" fill="#22c55e" font-size="22">DONE</text>
+  <line x1="1070" y1="172" x2="1108" y2="172" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 2: ARENA INTERNAL MECHANISM (the big diagram)           -->
+  <!-- ================================================================ -->
+  <text x="40" y="240" fill="#0ea5e9" font-size="16" font-weight="600">ARENA INTERNAL: HYBRID SPEAKER SELECTION</text>
+  <line x1="40" y1="248" x2="1160" y2="248" stroke="#334155" stroke-width="1"/>
+
+  <!-- Arena container -->
+  <rect x="40" y="265" width="1120" height="560" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadow)"/>
+  <text x="60" y="292" fill="#475569" font-size="11" font-weight="500">arena.ts</text>
+
+  <!-- ====== Moderator box (top center) ====== -->
+  <rect x="460" y="310" width="280" height="80" rx="12" fill="url(#modGrad)" filter="url(#shadow)"/>
+  <text x="600" y="338" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">Moderator</text>
+  <text x="600" y="356" text-anchor="middle" fill="#e9d5ff" font-size="11">Every 5 turns: steer + optionally suggest</text>
+  <text x="600" y="374" text-anchor="middle" fill="#ddd6fe" font-size="11">speaker — NOT the dictator of turn order</text>
+
+  <!-- ====== Transcript box (left side) ====== -->
+  <rect x="60" y="320" width="280" height="100" rx="12" fill="#334155" filter="url(#shadow)"/>
+  <text x="200" y="348" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="700">Shared Transcript</text>
+  <text x="200" y="368" text-anchor="middle" fill="#94a3b8" font-size="11">All roles see full conversation history</text>
+  <text x="200" y="386" text-anchor="middle" fill="#94a3b8" font-size="11">Short turns: 50-150 words each</text>
+  <text x="200" y="404" text-anchor="middle" fill="#94a3b8" font-size="11">Recent 10 entries as context</text>
+
+  <!-- ====== Speaker Selector box (center) ====== -->
+  <rect x="460" y="430" width="280" height="120" rx="12" fill="#1e3a5f" stroke="#0ea5e9" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="458" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="700">Speaker Selector (Hybrid)</text>
+
+  <!-- Priority 1 -->
+  <rect x="480" y="470" width="240" height="22" rx="4" fill="#14b8a6" opacity="0.2"/>
+  <text x="490" y="485" fill="#2dd4bf" font-size="11" font-weight="600">1. Mention: @RoleName / "RoleName, ..."</text>
+
+  <!-- Priority 2 -->
+  <rect x="480" y="496" width="240" height="22" rx="4" fill="#8b5cf6" opacity="0.2"/>
+  <text x="490" y="511" fill="#c4b5fd" font-size="11" font-weight="600">2. Moderator override (suggestedSpeaker)</text>
+
+  <!-- Priority 3 -->
+  <rect x="480" y="522" width="240" height="22" rx="4" fill="#a78bfa" opacity="0.15"/>
+  <text x="490" y="537" fill="#c4b5fd" font-size="11" font-weight="600">3. Heuristic: least recent + balanced count</text>
+
+  <!-- ====== 6 Role circles (right side) ====== -->
+  <!-- Row 1: 3 roles -->
+  <circle cx="870" cy="340" r="36" fill="url(#roleGrad1)" filter="url(#shadow)"/>
+  <text x="870" y="336" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">Trend</text>
+  <text x="870" y="348" text-anchor="middle" fill="#fef3c7" font-size="9">Hunter</text>
+
+  <circle cx="970" cy="340" r="36" fill="url(#roleGrad2)" filter="url(#shadow)"/>
+  <text x="970" y="336" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">User</text>
+  <text x="970" y="348" text-anchor="middle" fill="#d1fae5" font-size="9">Voice</text>
+
+  <circle cx="1070" cy="340" r="36" fill="url(#roleGrad3)" filter="url(#shadow)"/>
+  <text x="1070" y="336" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">Engineer</text>
+
+  <!-- Row 2: 3 roles -->
+  <circle cx="870" cy="430" r="36" fill="url(#roleGrad4)" filter="url(#shadow)"/>
+  <text x="870" y="426" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">Devil's</text>
+  <text x="870" y="438" text-anchor="middle" fill="#fecaca" font-size="9">Advocate</text>
+
+  <circle cx="970" cy="430" r="36" fill="url(#roleGrad5)" filter="url(#shadow)"/>
+  <text x="970" y="426" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">Minimalist</text>
+
+  <circle cx="1070" cy="430" r="36" fill="url(#roleGrad6)" filter="url(#shadow)"/>
+  <text x="1070" y="426" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">Philosopher</text>
+
+  <!-- ====== Arrows from Selector to Roles ====== -->
+  <!-- To TrendHunter -->
+  <line x1="730" y1="460" x2="840" y2="350" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To UserVoice -->
+  <line x1="730" y1="470" x2="940" y2="355" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To Engineer -->
+  <line x1="740" y1="490" x2="1040" y2="365" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To DevilAdvocate -->
+  <line x1="730" y1="520" x2="840" y2="420" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To Minimalist -->
+  <line x1="740" y1="540" x2="940" y2="420" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To Philosopher -->
+  <line x1="740" y1="550" x2="1040" y2="420" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+
+  <!-- ====== Arrows from Roles back to Transcript ====== -->
+  <path d="M 834 340 Q 500 310 340 340" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow)" opacity="0.5"/>
+  <path d="M 834 430 Q 500 460 340 400" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow)" opacity="0.5"/>
+
+  <!-- ====== Mention arrows (role to role) ====== -->
+  <path d="M 906 340 Q 930 360 934 360" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="935" y="352" fill="#fbbf24" font-size="9" font-weight="600">@mention triggers</text>
+
+  <!-- ====== Flow arrows: Moderator to Selector ====== -->
+  <line x1="600" y1="390" x2="600" y2="430" stroke="#c4b5fd" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="625" y="416" fill="#c4b5fd" font-size="10">optional</text>
+
+  <!-- ====== Flow arrows: Transcript to Selector ====== -->
+  <line x1="340" y1="470" x2="460" y2="490" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="360" y="476" fill="#94a3b8" font-size="10">parse mentions</text>
+
+  <!-- ====== Bottom: Convergence & Synthesis ====== -->
+  <rect x="340" y="590" width="520" height="50" rx="10" fill="#1e3a5f" stroke="#0ea5e9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="600" y="612" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="600">Natural Convergence Detection: 3+ silent turns (&lt;80 chars or "agree &amp; yield") → break</text>
+  <text x="600" y="630" text-anchor="middle" fill="#7dd3fc" font-size="11">Final Synthesis: Moderator extracts best elements, resolves contradictions, outputs ONE refined idea</text>
+
+  <!-- ====== Flow arrows to convergence ====== -->
+  <line x1="600" y1="550" x2="600" y2="590" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 3: LANGUAGE SUPPORT                                     -->
+  <!-- ================================================================ -->
+  <text x="40" y="680" fill="#22c55e" font-size="16" font-weight="600">MULTI-LANGUAGE SUPPORT</text>
+  <line x1="40" y1="688" x2="1160" y2="688" stroke="#334155" stroke-width="1"/>
+
+  <!-- Language boxes -->
+  <rect x="60" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="185" y="740" text-anchor="middle" fill="#f59e0b" font-size="18" font-weight="700">English</text>
+  <text x="185" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">Default language</text>
+  <text x="185" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang en (or omit)</text>
+  <text x="185" y="798" text-anchor="middle" fill="#64748b" font-size="11">All agents output in English</text>
+
+  <rect x="340" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#ef4444" stroke-width="2" filter="url(#shadowSm)"/>
+  <text x="465" y="740" text-anchor="middle" fill="#ef4444" font-size="18" font-weight="700">Chinese (中文)</text>
+  <text x="465" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">All roles, design specs, code</text>
+  <text x="465" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang zh</text>
+  <text x="465" y="798" text-anchor="middle" fill="#64748b" font-size="11">Full Chinese output across pipeline</text>
+
+  <rect x="620" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="745" y="740" text-anchor="middle" fill="#3b82f6" font-size="18" font-weight="700">Japanese (日本語)</text>
+  <text x="745" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">All roles, design specs, code</text>
+  <text x="745" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang ja</text>
+  <text x="745" y="798" text-anchor="middle" fill="#64748b" font-size="11">Full Japanese output across pipeline</text>
+
+  <rect x="900" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="1025" y="740" text-anchor="middle" fill="#22c55e" font-size="18" font-weight="700">Korean (한국어)</text>
+  <text x="1025" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">All roles, design specs, code</text>
+  <text x="1025" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang ko</text>
+  <text x="1025" y="798" text-anchor="middle" fill="#64748b" font-size="11">Full Korean output across pipeline</text>
+
+  <!-- Language instruction mechanism -->
+  <rect x="60" y="830" width="1090" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="80" y="858" fill="#22c55e" font-size="13" font-weight="600">Implementation: Language instruction injected at the FRONT of user content</text>
+  <text x="80" y="880" fill="#94a3b8" font-size="12">Format: "OUTPUT LANGUAGE: Chinese (中文). Every response MUST be entirely in Chinese."</text>
+  <text x="80" y="898" fill="#64748b" font-size="11">Applied in: IdeaGen Arena roles, Designer, Builder, Reviewer, Deployer — every LLM call across the pipeline</text>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 4: OBSERVABILITY                                        -->
+  <!-- ================================================================ -->
+  <text x="40" y="960" fill="#a78bfa" font-size="16" font-weight="600">OBSERVABILITY SYSTEM</text>
+  <line x1="40" y1="968" x2="1160" y2="968" stroke="#334155" stroke-width="1"/>
+
+  <!-- EventBus box -->
+  <rect x="60" y="990" width="340" height="140" rx="12" fill="#1e293b" stroke="#6d28d9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="230" y="1018" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">EventBus</text>
+  <text x="230" y="1040" text-anchor="middle" fill="#94a3b8" font-size="11">In-memory event hub with JSONL persistence</text>
+  <text x="230" y="1058" text-anchor="middle" fill="#64748b" font-size="11">Events: phase_start, role_pitch, role_speak,</text>
+  <text x="230" y="1076" text-anchor="middle" fill="#64748b" font-size="11">moderator_summary, synthesis, scoring,</text>
+  <text x="230" y="1094" text-anchor="middle" fill="#64748b" font-size="11">design_output, builder_output, review_findings</text>
+  <text x="230" y="1112" text-anchor="middle" fill="#64748b" font-size="11">deploy_summary</text>
+
+  <!-- Report Generator box -->
+  <rect x="430" y="990" width="340" height="140" rx="12" fill="#1e293b" stroke="#6d28d9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="600" y="1018" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">Report Generator</text>
+  <text x="600" y="1040" text-anchor="middle" fill="#94a3b8" font-size="11">Persistent Markdown reports per pipeline run</text>
+  <text x="600" y="1058" text-anchor="middle" fill="#64748b" font-size="11">Phase-structured with role contributions</text>
+  <text x="600" y="1076" text-anchor="middle" fill="#64748b" font-size="11">JSON event summary (events.json)</text>
+  <text x="600" y="1094" text-anchor="middle" fill="#64748b" font-size="11">Output: output/report-{timestamp}.md</text>
+  <text x="600" y="1112" text-anchor="middle" fill="#64748b" font-size="11">Terminal: real-time streaming display</text>
+
+  <!-- Config display -->
+  <rect x="800" y="990" width="350" height="140" rx="12" fill="#1e293b" stroke="#6d28d9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="975" y="1018" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">Configuration</text>
+  <text x="975" y="1040" text-anchor="middle" fill="#94a3b8" font-size="11">Priority: CLI flags > env vars > config file</text>
+  <text x="975" y="1058" text-anchor="middle" fill="#64748b" font-size="11">Key settings: API_KEY, MODEL, BASE_URL,</text>
+  <text x="975" y="1076" text-anchor="middle" fill="#64748b" font-size="11">MAX_TOKENS, TEMPERATURE, LANGUAGE, OUTPUT_DIR</text>
+  <text x="975" y="1094" text-anchor="middle" fill="#64748b" font-size="11">File: .idea-agent.json</text>
+  <text x="975" y="1112" text-anchor="middle" fill="#64748b" font-size="11">CLI: --api-key, --model, --base-url, --lang</text>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 5: DETAILED FLOW DIAGRAM                                -->
+  <!-- ================================================================ -->
+  <text x="40" y="1180" fill="#f59e0b" font-size="16" font-weight="600">DETAILED GROUP CHAT FLOW</text>
+  <line x1="40" y1="1188" x2="1160" y2="1188" stroke="#334155" stroke-width="1"/>
+
+  <!-- Flow steps -->
+  <rect x="60" y="1210" width="260" height="55" rx="8" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="190" y="1232" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">1. Moderator Opening</text>
+  <text x="190" y="1250" text-anchor="middle" fill="#94a3b8" font-size="11">Introduce topic + first speaker suggestion</text>
+  <line x1="320" y1="1237" x2="358" y2="1237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="360" y="1210" width="260" height="55" rx="8" fill="#14b8a6" opacity="0.3" stroke="#14b8a6" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="490" y="1232" text-anchor="middle" fill="#2dd4bf" font-size="13" font-weight="600">2. Detect Mentions</text>
+  <text x="490" y="1250" text-anchor="middle" fill="#99f6e4" font-size="11">Parse last response for @RoleName</text>
+  <line x1="620" y1="1237" x2="658" y2="1237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="660" y="1210" width="260" height="55" rx="8" fill="#8b5cf6" opacity="0.3" stroke="#8b5cf6" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="790" y="1232" text-anchor="middle" fill="#c4b5fd" font-size="13" font-weight="600">3. Select Speaker</text>
+  <text x="790" y="1250" text-anchor="middle" fill="#ddd6fe" font-size="11">mention → moderator → heuristic</text>
+  <line x1="920" y1="1237" x2="958" y2="1237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="960" y="1210" width="200" height="55" rx="8" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="1060" y="1232" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">4. Role Speaks</text>
+  <text x="1060" y="1250" text-anchor="middle" fill="#94a3b8" font-size="11">Short response + transcript</text>
+
+  <!-- Row 2: Loop back -->
+  <path d="M 1060 1265 Q 1060 1300 900 1300 L 400 1300" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="680" y="1315" text-anchor="middle" fill="#64748b" font-size="11">Repeat until maxTurns (24) or natural convergence</text>
+
+  <!-- Bottom row: convergence -->
+  <rect x="60" y="1350" width="260" height="55" rx="8" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="190" y="1372" text-anchor="middle" fill="#fca5a5" font-size="13" font-weight="600">5. Convergence Detection</text>
+  <text x="190" y="1390" text-anchor="middle" fill="#94a3b8" font-size="11">3+ silent turns → early break</text>
+  <line x1="320" y1="1377" x2="358" y2="1377" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="360" y="1350" width="260" height="55" rx="8" fill="#22c55e" opacity="0.3" stroke="#22c55e" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="490" y="1372" text-anchor="middle" fill="#86efac" font-size="13" font-weight="600">6. Final Synthesis</text>
+  <text x="490" y="1390" text-anchor="middle" fill="#94a3b8" font-size="11">Moderator extracts best elements</text>
+  <line x1="620" y1="1377" x2="658" y2="1377" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="660" y="1350" width="260" height="55" rx="8" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="790" y="1372" text-anchor="middle" fill="#fde68a" font-size="13" font-weight="600">7. Scoring</text>
+  <text x="790" y="1390" text-anchor="middle" fill="#94a3b8" font-size="11">5 dimensions: novelty, feasibility...</text>
+  <line x1="920" y1="1377" x2="958" y2="1377" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="960" y="1350" width="200" height="55" rx="8" fill="#22c55e" filter="url(#shadowSm)"/>
+  <text x="1060" y="1372" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">Idea Artifact</text>
+  <text x="1060" y="1390" text-anchor="middle" fill="#bbf7d0" font-size="11">→ Pipeline continues</text>
+
+</svg>

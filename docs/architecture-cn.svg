@@ -1,0 +1,342 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1450" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="pipelineGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="arenaGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="roleGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="roleGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="roleGrad3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="roleGrad4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+    <linearGradient id="roleGrad5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="roleGrad6" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="modGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="triggerGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14b8a6"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="heuristicGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <!-- Drop shadow filter -->
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="shadowSm" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <!-- Arrow marker -->
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowBright" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="1450" fill="url(#bg)" rx="12"/>
+
+  <!-- ===== TITLE ===== -->
+  <text x="600" y="48" text-anchor="middle" fill="#f1f5f9" font-size="28" font-weight="700">创意到产品：系统架构</text>
+  <text x="600" y="74" text-anchor="middle" fill="#94a3b8" font-size="14">多智能体群聊竞技场 — 混合发言权选择机制</text>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 1: OVERALL PIPELINE                                     -->
+  <!-- ================================================================ -->
+  <text x="40" y="120" fill="#6366f1" font-size="16" font-weight="600">流水线总览</text>
+  <line x1="40" y1="128" x2="1160" y2="128" stroke="#334155" stroke-width="1"/>
+
+  <!-- Pipeline boxes -->
+  <!-- User Trigger -->
+  <rect x="40" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="105" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">用户</text>
+  <text x="105" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">触发想法</text>
+  <line x1="170" y1="172" x2="218" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Arena -->
+  <rect x="220" y="148" width="130" height="48" rx="10" fill="#0ea5e9" opacity="0.8" filter="url(#shadowSm)"/>
+  <text x="285" y="168" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">创意竞技场</text>
+  <text x="285" y="184" text-anchor="middle" fill="#e0f2fe" font-size="11">6 角色辩论</text>
+  <line x1="350" y1="172" x2="398" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Designer -->
+  <rect x="400" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="465" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">设计师</text>
+  <text x="465" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">技术规格</text>
+  <line x1="530" y1="172" x2="578" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Builders -->
+  <rect x="580" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="645" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">构建器</text>
+  <text x="645" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">并行开发</text>
+  <line x1="710" y1="172" x2="758" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reviewer -->
+  <rect x="760" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="825" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">审查者</text>
+  <text x="825" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">测试修复</text>
+  <line x1="890" y1="172" x2="938" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Deployer -->
+  <rect x="940" y="148" width="130" height="48" rx="10" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="1005" y="168" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">部署者</text>
+  <text x="1005" y="184" text-anchor="middle" fill="#94a3b8" font-size="11">发布上线</text>
+
+  <!-- Done star -->
+  <text x="1130" y="178" text-anchor="middle" fill="#22c55e" font-size="20">完成</text>
+  <line x1="1070" y1="172" x2="1108" y2="172" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 2: ARENA INTERNAL MECHANISM (the big diagram)           -->
+  <!-- ================================================================ -->
+  <text x="40" y="240" fill="#0ea5e9" font-size="16" font-weight="600">竞技场核心：混合发言权选择机制</text>
+  <line x1="40" y1="248" x2="1160" y2="248" stroke="#334155" stroke-width="1"/>
+
+  <!-- Arena container -->
+  <rect x="40" y="265" width="1120" height="560" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadow)"/>
+  <text x="60" y="292" fill="#475569" font-size="11" font-weight="500">arena.ts</text>
+
+  <!-- ====== Moderator box (top center) ====== -->
+  <rect x="460" y="310" width="280" height="80" rx="12" fill="url(#modGrad)" filter="url(#shadow)"/>
+  <text x="600" y="338" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">主持人</text>
+  <text x="600" y="356" text-anchor="middle" fill="#e9d5ff" font-size="11">每 5 轮介入：引导方向 + 可选建议</text>
+  <text x="600" y="374" text-anchor="middle" fill="#ddd6fe" font-size="11">发言者 — 非独裁者，不指定每轮顺序</text>
+
+  <!-- ====== Transcript box (left side) ====== -->
+  <rect x="60" y="320" width="280" height="100" rx="12" fill="#334155" filter="url(#shadow)"/>
+  <text x="200" y="348" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="700">共享对话记录</text>
+  <text x="200" y="368" text-anchor="middle" fill="#94a3b8" font-size="11">所有角色可见完整讨论历史</text>
+  <text x="200" y="386" text-anchor="middle" fill="#94a3b8" font-size="11">短轮发言：每人 50-150 字</text>
+  <text x="200" y="404" text-anchor="middle" fill="#94a3b8" font-size="11">保留最近 10 条发言作为上下文</text>
+
+  <!-- ====== Speaker Selector box (center) ====== -->
+  <rect x="460" y="430" width="280" height="120" rx="12" fill="#1e3a5f" stroke="#0ea5e9" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="458" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="700">发言权选择器（混合模式）</text>
+
+  <!-- Priority 1 -->
+  <rect x="480" y="470" width="240" height="22" rx="4" fill="#14b8a6" opacity="0.2"/>
+  <text x="490" y="485" fill="#2dd4bf" font-size="11" font-weight="600">1. 点名触发：@角色名 / "角色名，..."</text>
+
+  <!-- Priority 2 -->
+  <rect x="480" y="496" width="240" height="22" rx="4" fill="#8b5cf6" opacity="0.2"/>
+  <text x="490" y="511" fill="#c4b5fd" font-size="11" font-weight="600">2. 主持人建议（推荐特定角色）</text>
+
+  <!-- Priority 3 -->
+  <rect x="480" y="522" width="240" height="22" rx="4" fill="#a78bfa" opacity="0.15"/>
+  <text x="490" y="537" fill="#c4b5fd" font-size="11" font-weight="600">3. 启发式兜底：最久未发言 + 均衡计数</text>
+
+  <!-- ====== 6 Role circles (right side) ====== -->
+  <!-- Row 1: 3 roles -->
+  <circle cx="870" cy="340" r="36" fill="url(#roleGrad1)" filter="url(#shadow)"/>
+  <text x="870" y="336" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">趋势</text>
+  <text x="870" y="348" text-anchor="middle" fill="#fef3c7" font-size="9">猎人</text>
+
+  <circle cx="970" cy="340" r="36" fill="url(#roleGrad2)" filter="url(#shadow)"/>
+  <text x="970" y="336" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">用户</text>
+  <text x="970" y="348" text-anchor="middle" fill="#d1fae5" font-size="9">之声</text>
+
+  <circle cx="1070" cy="340" r="36" fill="url(#roleGrad3)" filter="url(#shadow)"/>
+  <text x="1070" y="336" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">工程师</text>
+
+  <!-- Row 2: 3 roles -->
+  <circle cx="870" cy="430" r="36" fill="url(#roleGrad4)" filter="url(#shadow)"/>
+  <text x="870" y="426" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">反方</text>
+  <text x="870" y="438" text-anchor="middle" fill="#fecaca" font-size="9">辩手</text>
+
+  <circle cx="970" cy="430" r="36" fill="url(#roleGrad5)" filter="url(#shadow)"/>
+  <text x="970" y="426" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">极简主义</text>
+
+  <circle cx="1070" cy="430" r="36" fill="url(#roleGrad6)" filter="url(#shadow)"/>
+  <text x="1070" y="426" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">哲学家</text>
+
+  <!-- ====== Arrows from Selector to Roles ====== -->
+  <!-- To TrendHunter -->
+  <line x1="730" y1="460" x2="840" y2="350" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To UserVoice -->
+  <line x1="730" y1="470" x2="940" y2="355" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To Engineer -->
+  <line x1="740" y1="490" x2="1040" y2="365" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To DevilAdvocate -->
+  <line x1="730" y1="520" x2="840" y2="420" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To Minimalist -->
+  <line x1="740" y1="540" x2="940" y2="420" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+  <!-- To Philosopher -->
+  <line x1="740" y1="550" x2="1040" y2="420" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowBright)"/>
+
+  <!-- ====== Arrows from Roles back to Transcript ====== -->
+  <path d="M 834 340 Q 500 310 340 340" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow)" opacity="0.5"/>
+  <path d="M 834 430 Q 500 460 340 400" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow)" opacity="0.5"/>
+
+  <!-- ====== Mention arrows (role to role) ====== -->
+  <path d="M 906 340 Q 930 360 934 360" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="935" y="352" fill="#fbbf24" font-size="9" font-weight="600">@点名 自动触发</text>
+
+  <!-- ====== Flow arrows: Moderator to Selector ====== -->
+  <line x1="600" y1="390" x2="600" y2="430" stroke="#c4b5fd" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="625" y="416" fill="#c4b5fd" font-size="10">可选建议</text>
+
+  <!-- ====== Flow arrows: Transcript to Selector ====== -->
+  <line x1="340" y1="470" x2="460" y2="490" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="360" y="476" fill="#94a3b8" font-size="10">解析点名</text>
+
+  <!-- ====== Bottom: Convergence & Synthesis ====== -->
+  <rect x="340" y="590" width="520" height="50" rx="10" fill="#1e3a5f" stroke="#0ea5e9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="600" y="612" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="600">自然收敛检测：连续 3+ 轮沉默（&lt;80 字或"同意 + 让出"）→ 提前结束</text>
+  <text x="600" y="630" text-anchor="middle" fill="#7dd3fc" font-size="11">最终综合：主持人提取最佳元素，化解矛盾，输出一个精炼的产品方案</text>
+
+  <!-- ====== Flow arrows to convergence ====== -->
+  <line x1="600" y1="550" x2="600" y2="590" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 3: LANGUAGE SUPPORT                                     -->
+  <!-- ================================================================ -->
+  <text x="40" y="680" fill="#22c55e" font-size="16" font-weight="600">多语言支持</text>
+  <line x1="40" y1="688" x2="1160" y2="688" stroke="#334155" stroke-width="1"/>
+
+  <!-- Language boxes -->
+  <rect x="60" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="185" y="740" text-anchor="middle" fill="#f59e0b" font-size="18" font-weight="700">English</text>
+  <text x="185" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">默认语言</text>
+  <text x="185" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang en（或省略）</text>
+  <text x="185" y="798" text-anchor="middle" fill="#64748b" font-size="11">全流水线英文输出</text>
+
+  <rect x="340" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#ef4444" stroke-width="2" filter="url(#shadowSm)"/>
+  <text x="465" y="740" text-anchor="middle" fill="#ef4444" font-size="18" font-weight="700">中文</text>
+  <text x="465" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">角色讨论、设计规格、代码</text>
+  <text x="465" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang zh</text>
+  <text x="465" y="798" text-anchor="middle" fill="#64748b" font-size="11">全流水线中文输出</text>
+
+  <rect x="620" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="745" y="740" text-anchor="middle" fill="#3b82f6" font-size="18" font-weight="700">日本語</text>
+  <text x="745" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">角色讨论、设计规格、代码</text>
+  <text x="745" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang ja</text>
+  <text x="745" y="798" text-anchor="middle" fill="#64748b" font-size="11">全流水线日文输出</text>
+
+  <rect x="900" y="710" width="250" height="100" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="1025" y="740" text-anchor="middle" fill="#22c55e" font-size="18" font-weight="700">한국어</text>
+  <text x="1025" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">角色讨论、设计规格、代码</text>
+  <text x="1025" y="780" text-anchor="middle" fill="#64748b" font-size="11">--lang ko</text>
+  <text x="1025" y="798" text-anchor="middle" fill="#64748b" font-size="11">全流水线韩文输出</text>
+
+  <!-- Language instruction mechanism -->
+  <rect x="60" y="830" width="1090" height="80" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="80" y="858" fill="#22c55e" font-size="13" font-weight="600">实现原理：语言指令注入在用户内容的最前端</text>
+  <text x="80" y="880" fill="#94a3b8" font-size="12">格式："OUTPUT LANGUAGE: Chinese (中文). Every response MUST be entirely in Chinese."</text>
+  <text x="80" y="898" fill="#64748b" font-size="11">应用于：创意竞技场角色、设计师、构建器、审查者、部署者 — 全流水线所有 LLM 调用</text>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 4: OBSERVABILITY                                        -->
+  <!-- ================================================================ -->
+  <text x="40" y="960" fill="#a78bfa" font-size="16" font-weight="600">可观测性系统</text>
+  <line x1="40" y1="968" x2="1160" y2="968" stroke="#334155" stroke-width="1"/>
+
+  <!-- EventBus box -->
+  <rect x="60" y="990" width="340" height="140" rx="12" fill="#1e293b" stroke="#6d28d9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="230" y="1018" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">事件总线（EventBus）</text>
+  <text x="230" y="1040" text-anchor="middle" fill="#94a3b8" font-size="11">内存事件中心 + JSONL 持久化</text>
+  <text x="230" y="1058" text-anchor="middle" fill="#64748b" font-size="11">事件类型：phase_start, role_pitch,</text>
+  <text x="230" y="1076" text-anchor="middle" fill="#64748b" font-size="11">role_speak, moderator_summary, synthesis,</text>
+  <text x="230" y="1094" text-anchor="middle" fill="#64748b" font-size="11">scoring, design_output, builder_output,</text>
+  <text x="230" y="1112" text-anchor="middle" fill="#64748b" font-size="11">review_findings, deploy_summary</text>
+
+  <!-- Report Generator box -->
+  <rect x="430" y="990" width="340" height="140" rx="12" fill="#1e293b" stroke="#6d28d9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="600" y="1018" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">报告生成器</text>
+  <text x="600" y="1040" text-anchor="middle" fill="#94a3b8" font-size="11">每次运行生成持久化 Markdown 报告</text>
+  <text x="600" y="1058" text-anchor="middle" fill="#64748b" font-size="11">按阶段结构组织，包含角色贡献</text>
+  <text x="600" y="1076" text-anchor="middle" fill="#64748b" font-size="11">JSON 事件汇总（events.json）</text>
+  <text x="600" y="1094" text-anchor="middle" fill="#64748b" font-size="11">输出：output/report-{时间戳}.md</text>
+  <text x="600" y="1112" text-anchor="middle" fill="#64748b" font-size="11">终端：实时流式展示</text>
+
+  <!-- Config display -->
+  <rect x="800" y="990" width="350" height="140" rx="12" fill="#1e293b" stroke="#6d28d9" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="975" y="1018" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">配置系统</text>
+  <text x="975" y="1040" text-anchor="middle" fill="#94a3b8" font-size="11">优先级：CLI 参数 > 环境变量 > 配置文件</text>
+  <text x="975" y="1058" text-anchor="middle" fill="#64748b" font-size="11">关键设置：API_KEY, MODEL, BASE_URL,</text>
+  <text x="975" y="1076" text-anchor="middle" fill="#64748b" font-size="11">MAX_TOKENS, TEMPERATURE, LANGUAGE,</text>
+  <text x="975" y="1094" text-anchor="middle" fill="#64748b" font-size="11">OUTPUT_DIR</text>
+  <text x="975" y="1112" text-anchor="middle" fill="#64748b" font-size="11">配置文件：.idea-agent.json</text>
+
+  <!-- ================================================================ -->
+  <!-- SECTION 5: DETAILED FLOW DIAGRAM                                -->
+  <!-- ================================================================ -->
+  <text x="40" y="1180" fill="#f59e0b" font-size="16" font-weight="600">群聊详细流程</text>
+  <line x1="40" y1="1188" x2="1160" y2="1188" stroke="#334155" stroke-width="1"/>
+
+  <!-- Flow steps -->
+  <rect x="60" y="1210" width="260" height="55" rx="8" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="190" y="1232" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">1. 主持人开场</text>
+  <text x="190" y="1250" text-anchor="middle" fill="#94a3b8" font-size="11">介绍议题 + 建议首个发言者</text>
+  <line x1="320" y1="1237" x2="358" y2="1237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="360" y="1210" width="260" height="55" rx="8" fill="#14b8a6" opacity="0.3" stroke="#14b8a6" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="490" y="1232" text-anchor="middle" fill="#2dd4bf" font-size="13" font-weight="600">2. 检测点名</text>
+  <text x="490" y="1250" text-anchor="middle" fill="#99f6e4" font-size="11">解析上一条回复中的 @角色名</text>
+  <line x1="620" y1="1237" x2="658" y2="1237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="660" y="1210" width="260" height="55" rx="8" fill="#8b5cf6" opacity="0.3" stroke="#8b5cf6" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="790" y="1232" text-anchor="middle" fill="#c4b5fd" font-size="13" font-weight="600">3. 选择发言者</text>
+  <text x="790" y="1250" text-anchor="middle" fill="#ddd6fe" font-size="11">点名 → 主持人 → 启发式</text>
+  <line x1="920" y1="1237" x2="958" y2="1237" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="960" y="1210" width="200" height="55" rx="8" fill="#334155" filter="url(#shadowSm)"/>
+  <text x="1060" y="1232" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">4. 角色发言</text>
+  <text x="1060" y="1250" text-anchor="middle" fill="#94a3b8" font-size="11">短回复 + 写入记录</text>
+
+  <!-- Row 2: Loop back -->
+  <path d="M 1060 1265 Q 1060 1300 900 1300 L 400 1300" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="680" y="1315" text-anchor="middle" fill="#64748b" font-size="11">循环至最大轮次（24）或自然收敛</text>
+
+  <!-- Bottom row: convergence -->
+  <rect x="60" y="1350" width="260" height="55" rx="8" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="190" y="1372" text-anchor="middle" fill="#fca5a5" font-size="13" font-weight="600">5. 收敛检测</text>
+  <text x="190" y="1390" text-anchor="middle" fill="#94a3b8" font-size="11">连续 3+ 轮沉默 → 提前结束</text>
+  <line x1="320" y1="1377" x2="358" y2="1377" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="360" y="1350" width="260" height="55" rx="8" fill="#22c55e" opacity="0.3" stroke="#22c55e" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="490" y="1372" text-anchor="middle" fill="#86efac" font-size="13" font-weight="600">6. 最终综合</text>
+  <text x="490" y="1390" text-anchor="middle" fill="#94a3b8" font-size="11">主持人提取最佳元素</text>
+  <line x1="620" y1="1377" x2="658" y2="1377" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="660" y="1350" width="260" height="55" rx="8" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1" filter="url(#shadowSm)"/>
+  <text x="790" y="1372" text-anchor="middle" fill="#fde68a" font-size="13" font-weight="600">7. 评分</text>
+  <text x="790" y="1390" text-anchor="middle" fill="#94a3b8" font-size="11">5 维度：新颖性、可行性...</text>
+  <line x1="920" y1="1377" x2="958" y2="1377" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="960" y="1350" width="200" height="55" rx="8" fill="#22c55e" filter="url(#shadowSm)"/>
+  <text x="1060" y="1372" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">创意产物</text>
+  <text x="1060" y="1390" text-anchor="middle" fill="#bbf7d0" font-size="11">→ 继续流水线</text>
+
+</svg>
