@@ -23,6 +23,8 @@ cli
   .option('--max-tokens <n>', 'Max tokens per request', undefined)
   .option('--temperature <n>', 'Temperature for generation', undefined)
   .option('--lang <code>', 'Output language: en, zh, ja, ko, etc. (or set LANGUAGE env)', undefined)
+  .option('--web', 'Start web UI for real-time visualization', false)
+  .option('--port <n>', 'Web UI port (default: 8080)', '8080')
   .action(async (prompt, options) => {
     const cfg = resolveConfig({
       apiKey: options.apiKey,
@@ -52,6 +54,8 @@ cli
       maxTokens: cfg.maxTokens,
       temperature: cfg.temperature,
       language: cfg.language,
+      startWeb: options.web,
+      webPort: parseInt(options.port, 10),
     });
 
     try {
