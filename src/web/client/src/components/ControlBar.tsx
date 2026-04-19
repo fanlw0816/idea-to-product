@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 interface ArenaStatus {
-  status: 'waiting' | 'running' | 'completed' | 'error';
+  status: 'waiting' | 'running' | 'completed' | 'error' | 'stopped';
   phase: string | null;
   turn: number;
   maxTurns: number;
@@ -35,7 +35,7 @@ export function ControlBar({
   arenaStatus,
 }: ControlBarProps) {
   const isRunning = arenaStatus.status === 'running';
-  const isCompleted = arenaStatus.status === 'completed';
+  const isCompleted = arenaStatus.status === 'completed' || arenaStatus.status === 'stopped';
 
   return (
     <div className="flex items-center gap-2">
@@ -92,9 +92,14 @@ export function ControlBar({
       </button>
 
       {/* Status badge */}
-      {isRunning && !paused && (
+      {arenaStatus.status === 'running' && !paused && (
         <span className="arena-badge arena-badge-info animate-pulse-custom">
           Processing
+        </span>
+      )}
+      {arenaStatus.status === 'stopped' && (
+        <span className="arena-badge arena-badge-warning">
+          Stopped
         </span>
       )}
     </div>

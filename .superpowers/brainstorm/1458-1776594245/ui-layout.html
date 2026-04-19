@@ -1,0 +1,48 @@
+<h2>UI 布局方案</h2>
+<p class="subtitle">如何展示全流水线的流式内容？</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>单栏时间线</h3>
+      <p>所有事件按时间顺序流式呈现，像聊天界面。简洁直观，适合观察对话流程。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>双栏布局</h3>
+      <p>左侧时间线流，右侧显示当前阶段详情（角色统计、评分、文件列表等）。信息更丰富。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>分阶段标签页</h3>
+      <p>顶部标签切换：竞技场 / 设计 / 构建 / 审查 / 部署。每个阶段独立展示，互不干扰。</p>
+    </div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Preview: 方案 A - 单栏时间线</div>
+  <div class="mockup-body" style="padding: 16px; background: #1a1a2e;">
+    <div style="border-radius: 8px; background: #16213e; padding: 12px; margin-bottom: 8px;">
+      <div style="color: #e94560; font-weight: bold;">🎙️ Moderator</div>
+      <div style="color: #eee; margin-top: 4px;">Welcome everyone. Today we explore...</div>
+      <div style="color: #666; font-size: 12px; margin-top: 4px;">Turn 0 · phase: idea</div>
+    </div>
+    <div style="border-radius: 8px; background: #16213e; padding: 12px; margin-bottom: 8px;">
+      <div style="color: #ff6b6b; font-weight: bold;">⚔️ TrendHunter</div>
+      <div style="color: #eee; margin-top: 4px;">This market is saturated. Let me show you...</div>
+      <div style="color: #666; font-size: 12px; margin-top: 4px;">Turn 1 · phase: idea</div>
+    </div>
+    <div style="border-radius: 8px; background: #16213e; padding: 12px;">
+      <div style="color: #4ecdc4; font-weight: bold;">🛡️ Engineer</div>
+      <div style="color: #eee; margin-top: 4px;">TrendHunter, you're ignoring the build cost...</div>
+      <div style="color: #666; font-size: 12px; margin-top: 4px;">Turn 2 · phase: idea</div>
+    </div>
+    <div style="text-align: center; color: #666; padding: 8px;">↓ 更多事件流式流入...</div>
+  </div>
+</div>

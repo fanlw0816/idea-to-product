@@ -1,4 +1,4 @@
-import { Wifi, WifiOff, Loader2, CheckCircle, AlertTriangle, Circle } from 'lucide-react';
+import { Wifi, WifiOff, Loader2, CheckCircle, AlertTriangle, Circle, Square } from 'lucide-react';
 
 interface ConnectionState {
   connected: boolean;
@@ -8,7 +8,7 @@ interface ConnectionState {
 }
 
 interface ArenaStatus {
-  status: 'waiting' | 'running' | 'completed' | 'error';
+  status: 'waiting' | 'running' | 'completed' | 'error' | 'stopped';
   phase: string | null;
   turn: number;
   maxTurns: number;
@@ -48,6 +48,8 @@ export function ConnectionStatus({ state, arenaStatus }: ConnectionStatusProps) 
     ? CheckCircle
     : arenaStatus.status === 'error'
     ? AlertTriangle
+    : arenaStatus.status === 'stopped'
+    ? Square
     : Circle;
 
   const statusColor = arenaStatus.status === 'running'
@@ -56,6 +58,8 @@ export function ConnectionStatus({ state, arenaStatus }: ConnectionStatusProps) 
     ? 'text-arena-success'
     : arenaStatus.status === 'error'
     ? 'text-arena-error'
+    : arenaStatus.status === 'stopped'
+    ? 'text-arena-warning'
     : 'text-arena-text-muted';
 
   const statusText = arenaStatus.status === 'running'
@@ -64,6 +68,8 @@ export function ConnectionStatus({ state, arenaStatus }: ConnectionStatusProps) 
     ? 'Completed'
     : arenaStatus.status === 'error'
     ? 'Error'
+    : arenaStatus.status === 'stopped'
+    ? 'Stopped'
     : 'Waiting';
 
   return (

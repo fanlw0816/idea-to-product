@@ -134,6 +134,7 @@ import {
   Wrench,     // review_fix
   Rocket as RocketLaunch, // deploy_summary
   XCircle,    // error
+  Square,     // stopped
 } from 'lucide-react';
 
 export function getEventIconComponent(type: string): React.ComponentType<{ className?: string }> {
@@ -154,6 +155,7 @@ export function getEventIconComponent(type: string): React.ComponentType<{ class
     review_fix: Wrench,
     deploy_summary: RocketLaunch,
     error: XCircle,
+    stopped: Square,
   };
   return icons[type] || MessageCircle;
 }

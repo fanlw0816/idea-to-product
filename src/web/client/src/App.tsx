@@ -43,6 +43,10 @@ export default function App() {
   const arenaStatus = useMemo(() => {
     if (events.length === 0) return { status: 'waiting', phase: null, turn: 0, maxTurns: 24 };
 
+    // Check if stopped by user
+    const stoppedEvent = events.find((e) => e.type === 'stopped');
+    if (stoppedEvent) return { status: 'stopped', phase: null, turn: 0, maxTurns: 24 };
+
     const phaseStarts = events.filter((e) => e.type === 'phase_start');
     const phaseEnds = events.filter((e) => e.type === 'phase_end');
     const currentPhase = phaseStarts.length > 0

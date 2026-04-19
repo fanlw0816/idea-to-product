@@ -69,7 +69,7 @@ export class EventBridge {
         const stopEvent: ObsEvent = {
           ts: Date.now(),
           time: new Date().toISOString(),
-          type: 'error',
+          type: 'stopped',
           phase: 'system',
           role: 'Orchestrator',
           content: 'Arena stopped by user',

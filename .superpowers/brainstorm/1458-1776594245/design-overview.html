@@ -1,0 +1,112 @@
+<h2>设计方案概览</h2>
+<p class="subtitle">创意竞技场 Web 流式展示界面</p>
+
+<div class="section">
+  <h3>核心技术选型</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>技术栈</h4>
+      <ul>
+        <li><strong>WebSocket</strong> 实时双向推送</li>
+        <li><strong>React + Vite</strong> 组件化开发</li>
+        <li><strong>Tailwind CSS</strong> 快速样式</li>
+        <li><strong>TypeScript</strong> 与现有项目一致</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>布局方案</h4>
+      <ul>
+        <li><strong>双栏布局</strong>（推荐）</li>
+        <li>左：时间线流式展示</li>
+        <li>右：当前阶段详情面板</li>
+        <li>信息密度平衡</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">整体架构</div>
+  <div class="mockup-body" style="padding: 16px; background: #0f0f1a;">
+    <div style="display: flex; gap: 16px; min-height: 300px;">
+      <!-- Left: Timeline -->
+      <div style="flex: 1; background: #1a1a2e; border-radius: 8px; padding: 12px;">
+        <div style="color: #fff; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #333;">📍 事件时间线</div>
+        <div style="font-size: 11px; color: #4ecdc4; background: #16213e; padding: 8px; border-radius: 4px; margin-bottom: 6px;">
+          <span style="color: #e94560;">💡 phase_start</span> idea — 竞技场启动
+        </div>
+        <div style="font-size: 11px; color: #4ecdc4; background: #16213e; padding: 8px; border-radius: 4px; margin-bottom: 6px;">
+          <span style="color: #ff6b6b;">🗣️ TrendHunter</span> 市场趋势分析...
+        </div>
+        <div style="font-size: 11px; color: #4ecdc4; background: #16213e; padding: 8px; border-radius: 4px; margin-bottom: 6px;">
+          <span style="color: #4ecdc4;">🛡️ Engineer</span> @TrendHunter 你忽略了...
+        </div>
+        <div style="font-size: 11px; color: #a78bfa; background: #16213e; padding: 8px; border-radius: 4px; margin-bottom: 6px;">
+          <span style="color: #a78bfa;">📐 design_output</span> 技术规格已生成
+        </div>
+        <div style="font-size: 11px; color: #fb923c; background: #16213e; padding: 8px; border-radius: 4px;">
+          <span style="color: #fb923c;">🔍 review_findings</span> 发现 3 个问题
+        </div>
+        <div style="text-align: center; color: #666; padding-top: 8px;">↓ 实时流入...</div>
+      </div>
+      <!-- Right: Detail Panel -->
+      <div style="width: 280px; background: #1a1a2e; border-radius: 8px; padding: 12px;">
+        <div style="color: #fff; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #333;">📊 当前阶段详情</div>
+        <div style="margin-bottom: 12px;">
+          <div style="color: #888; font-size: 10px;">PHASE</div>
+          <div style="color: #e94560; font-size: 14px;">💡 Idea Arena</div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="color: #888; font-size: 10px;">TURN</div>
+          <div style="color: #fff; font-size: 14px;">3 / 24</div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="color: #888; font-size: 10px;">发言统计</div>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
+            <span style="background: #ff6b6b; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px;">TrendHunter: 2</span>
+            <span style="background: #4ecdc4; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Engineer: 1</span>
+            <span style="background: #666; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px;">UserVoice: 0</span>
+          </div>
+        </div>
+        <div style="border-top: 1px solid #333; padding-top: 12px;">
+          <div style="color: #888; font-size: 10px;">连接状态</div>
+          <div style="color: #4ecdc4; font-size: 12px;">● 已连接 ws://localhost:8080</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>功能模块</h3>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="timeline" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h4>事件时间线</h4>
+        <p>所有 ObsEvent 流式展示，角色发言、阶段切换、评分、错误等</p>
+      </div>
+    </div>
+    <div class="option" data-choice="detail" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h4>阶段详情面板</h4>
+        <p>当前阶段、轮次、角色统计、评分、文件列表</p>
+      </div>
+    </div>
+    <div class="option" data-choice="role" onclick="toggleSelect(this)">
+      <div class="letter">3</div>
+      <div class="content">
+        <h4>角色发言展示</h4>
+        <p>点名关系可视化（@Mention 高亮），角色颜色区分</p>
+      </div>
+    </div>
+    <div class="option" data-choice="control" onclick="toggleSelect(this)">
+      <div class="letter">4</div>
+      <div class="content">
+        <h4>控制能力</h4>
+        <p>暂停/继续、重放历史事件、清空、导出日志</p>
+      </div>
+    </div>
+  </div>
+</div>

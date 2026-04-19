@@ -3,7 +3,7 @@ import { Sparkles, Palette, Hammer, Search, Rocket, MessageCircle } from 'lucide
 import { getPhaseIcon, getPhaseLabel } from '../utils/roleColors';
 
 interface ArenaStatus {
-  status: 'waiting' | 'running' | 'completed' | 'error';
+  status: 'waiting' | 'running' | 'completed' | 'error' | 'stopped';
   phase: string | null;
   turn: number;
   maxTurns: number;

@@ -16,7 +16,8 @@ export type EventType =
   | 'review_findings'
   | 'review_fix'
   | 'deploy_summary'
-  | 'error';
+  | 'error'
+  | 'stopped';  // User-initiated stop
 
 export interface ObsEvent {
   ts: number;
