@@ -1,3 +1,4 @@
+import type { WebServer } from '../web/server/index.js';
 import { IdeaGenArena } from '../agents/idea-gen/arena.js';
 import { DesignerAgent } from '../agents/designer/index.js';
 import { DynamicBuilderAgent } from '../agents/builder/index.js';
@@ -28,6 +29,8 @@ export interface OrchestratorConfig {
   maxTokens: number;
   temperature: number;
   language: string;
+  startWeb?: boolean;
+  webPort?: number;
 }
 
 export class Orchestrator {
@@ -48,6 +51,18 @@ export class Orchestrator {
     this.eventBus = new EventBus(this.config.stateDir);
     this.reportGen = new ReportGenerator(this.eventBus, this.config.stateDir);
     TerminalFormatter.attachTo(this.eventBus);
+
+    // Start web server if requested
+    let webServer: WebServer | undefined;
+    if (this.config.startWeb) {
+      const { WebServer } = await import('../web/server/index.js');
+      webServer = new WebServer({
+        port: this.config.webPort || 8080,
+        eventBus: this.eventBus,
+      });
+      const url = await webServer.start();
+      logger.info('WEB UI', `Started at ${url}`);
+    }
 
     // Phase start event
     this.eventBus.emit({
