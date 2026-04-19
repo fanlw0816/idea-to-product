@@ -1,5 +1,5 @@
 import type { ObsEvent } from '../types/event';
-import { getRoleTextColor, getEventIcon } from '../utils/roleColors';
+import { getRoleTextColor, getEventIcon, getLocalizedRoleName } from '../utils/roleColors';
 
 interface EventCardProps {
   event: ObsEvent;
@@ -10,6 +10,7 @@ interface EventCardProps {
 export function EventCard({ event, selected, onClick }: EventCardProps) {
   const roleColor = getRoleTextColor(event.role);
   const icon = getEventIcon(event.type);
+  const roleName = getLocalizedRoleName(event.role); // Use localized name
 
   // Highlight @mentions in content
   const highlightMentions = (content: string) => {
@@ -30,7 +31,7 @@ export function EventCard({ event, selected, onClick }: EventCardProps) {
       <div className="flex items-center gap-2 mb-1">
         <span>{icon}</span>
         <span style={{ color: roleColor }} className="font-semibold">
-          {event.role}
+          {roleName}
         </span>
         <span className="text-xs text-gray-500">
           [{event.type}]

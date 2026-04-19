@@ -13,6 +13,7 @@ export interface WebServerConfig {
   port: number;
   eventBus: EventBus;
   clientDir?: string;
+  onStop?: () => void;  // Callback when user requests stop
 }
 
 export class WebServer {
@@ -30,6 +31,11 @@ export class WebServer {
     this.server = createServer(this.app);
     this.wss = new WebSocketServer({ server: this.server });
     this.bridge = new EventBridge();
+
+    // Set up stop callback
+    if (config.onStop) {
+      this.bridge.setStopCallback(config.onStop);
+    }
 
     this.setupRoutes(config.clientDir);
     this.setupWebSocket();

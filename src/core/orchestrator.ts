@@ -37,9 +37,27 @@ export class Orchestrator {
   private config: OrchestratorConfig;
   private eventBus!: EventBus;
   private reportGen!: ReportGenerator;
+  private stopping = false;  // Flag to stop pipeline
 
   constructor(config: OrchestratorConfig) {
     this.config = config;
+  }
+
+  /** Request to stop the pipeline execution */
+  stop(): void {
+    this.stopping = true;
+    this.eventBus.emit({
+      type: 'error',
+      phase: 'system',
+      role: 'Orchestrator',
+      content: 'Stop requested by user',
+      meta: { reason: 'user_stop' },
+    });
+  }
+
+  /** Check if stop was requested */
+  isStopping(): boolean {
+    return this.stopping;
   }
 
   async run(userPrompt?: string): Promise<PipelineResult> {
@@ -59,6 +77,7 @@ export class Orchestrator {
       webServer = new WebServer({
         port: this.config.webPort || 8080,
         eventBus: this.eventBus,
+        onStop: () => this.stop(),  // Pass stop callback
       });
       const url = await webServer.start();
       logger.info('WEB UI', `Started at ${url}`);
@@ -86,16 +105,19 @@ export class Orchestrator {
     try {
       // Phase 1: Idea Generation (6-role debate arena)
       result.idea = await this.runIdeaGen(userPrompt);
+      if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('idea', result.idea);
       logger.success('IDEA', result.idea.tagline);
 
       // Phase 2: Design
       result.design = await this.runDesign(result.idea);
+      if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('design', result.design);
       logger.success('DESIGN', `${result.design.pages.length} pages, ${result.design.builderSpecs.length} builders`);
 
       // Phase 3: Dynamic Build (parallel agents based on design)
       result.build = await this.runBuild(result.idea, result.design);
+      if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('build', result.build);
 
       if (result.build.buildStatus === 'failure') {
@@ -107,12 +129,14 @@ export class Orchestrator {
 
       // Phase 4: Review + Polish
       result.review = await this.runReview(result.idea, result.design, result.build);
+      if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('review', result.review);
       logger.success(result.review.passed ? 'REVIEW' : 'REVIEW*',
         result.review.passed ? 'Passed' : `Passed with ${result.review.fixes.length} fixes`);
 
       // Phase 5: Deploy
       result.deploy = await this.runDeploy(result.idea, result.design, result.build, result.review);
+      if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('deploy', result.deploy);
       logger.success('DEPLOY', result.deploy.url || 'Ready to run');
 

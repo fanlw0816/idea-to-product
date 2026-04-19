@@ -63,12 +63,14 @@ export function useWebSocket(options: UseWebSocketOptions) {
     };
   }, [url, onEvent, onHistory, onExport]);
 
-  const sendControl = useCallback((action: 'pause' | 'resume' | 'clear' | 'export') => {
+  const sendControl = useCallback((action: 'pause' | 'resume' | 'clear' | 'export' | 'stop') => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'control', data: { action } }));
       if (action === 'pause') {
         setState((prev) => ({ ...prev, paused: true }));
       } else if (action === 'resume') {
+        setState((prev) => ({ ...prev, paused: false }));
+      } else if (action === 'stop') {
         setState((prev) => ({ ...prev, paused: false }));
       }
     }

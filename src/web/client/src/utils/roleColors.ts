@@ -1,5 +1,46 @@
 // Role color mapping — synced with TerminalFormatter
 
+// Localized role names (language: { codeName: displayName })
+const ROLE_LABELS_EN: Record<string, string> = {
+  TrendHunter: 'Trend Hunter',
+  UserVoice: 'User Voice',
+  Engineer: 'Engineer',
+  DevilAdvocate: "Devil's Advocate",
+  Minimalist: 'The Minimalist',
+  Philosopher: 'The Philosopher',
+  Moderator: 'Moderator',
+  DESIGNER: 'Designer',
+  REVIEWER: 'Reviewer',
+  DEPLOYER: 'Deployer',
+  Orchestrator: 'Orchestrator',
+};
+
+const ROLE_LABELS_ZH: Record<string, string> = {
+  TrendHunter: '趋势猎人',
+  UserVoice: '用户之声',
+  Engineer: '工程师',
+  DevilAdvocate: '反方辩手',
+  Minimalist: '极简主义者',
+  Philosopher: '哲学家',
+  Moderator: '主持人',
+  DESIGNER: '设计师',
+  REVIEWER: '审查员',
+  DEPLOYER: '部署员',
+  Orchestrator: '编排器',
+};
+
+/**
+ * Get localized role name based on language preference.
+ * @param role - The role codeName (e.g., 'TrendHunter')
+ * @param language - 'en' or 'zh' (defaults to 'zh' for Chinese users)
+ */
+export function getLocalizedRoleName(role: string, language: string = 'zh'): string {
+  if (language === 'zh') {
+    return ROLE_LABELS_ZH[role] || ROLE_LABELS_EN[role] || role;
+  }
+  return ROLE_LABELS_EN[role] || role;
+}
+
 const ROLE_COLORS: Record<string, string> = {
   TrendHunter: 'role-trendhunter',
   UserVoice: 'role-uservoice',

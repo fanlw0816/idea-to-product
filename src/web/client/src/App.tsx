@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { Timeline } from './components/Timeline';
 import { DetailPanel } from './components/DetailPanel';
@@ -38,6 +38,32 @@ export default function App() {
     onExport,
   });
 
+  // Compute arena status
+  const arenaStatus = useMemo(() => {
+    if (events.length === 0) return { status: 'waiting', phase: null, turn: 0, maxTurns: 24 };
+
+    const phaseStarts = events.filter((e) => e.type === 'phase_start');
+    const phaseEnds = events.filter((e) => e.type === 'phase_end');
+    const currentPhase = phaseStarts.length > 0
+      ? phaseStarts[phaseStarts.length - 1].phase
+      : null;
+
+    // Check if completed
+    const deployEnd = phaseEnds.find((e) => e.phase === 'deploy');
+    if (deployEnd) return { status: 'completed', phase: 'deploy', turn: 0, maxTurns: 24 };
+
+    // Compute turn for idea phase
+    const ideaEvents = events.filter((e) => e.phase === 'idea');
+    const turnEvents = ideaEvents.filter((e) => e.type === 'role_speak' || e.type === 'role_pitch');
+    const currentTurn = turnEvents.length;
+
+    // Check for errors
+    const hasError = events.some((e) => e.type === 'error');
+    if (hasError) return { status: 'error', phase: currentPhase, turn: currentTurn, maxTurns: 24 };
+
+    return { status: 'running', phase: currentPhase, turn: currentTurn, maxTurns: 24 };
+  }, [events]);
+
   const handleClear = () => {
     setEvents([]);
     setSelectedEvent(null);
@@ -52,21 +78,27 @@ export default function App() {
     sendControl('resume');
   };
 
+  const handleStop = () => {
+    sendControl('stop');
+  };
+
   return (
     <div className="min-h-screen bg-arena-bg text-gray-100">
       {/* Header */}
       <header className="bg-arena-card border-b border-arena-border px-4 py-2">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Arena Web UI</h1>
-          <ConnectionStatus state={state} />
+          <ConnectionStatus state={state} arenaStatus={arenaStatus} />
         </div>
         <ControlBar
           onClear={handleClear}
           onPause={handlePause}
           onResume={handleResume}
+          onStop={handleStop}
           onExport={() => sendControl('export')}
           connected={state.connected}
           paused={state.paused}
+          arenaStatus={arenaStatus}
         />
       </header>
 

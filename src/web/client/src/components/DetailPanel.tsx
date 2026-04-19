@@ -1,5 +1,5 @@
 import type { ObsEvent } from '../types/event';
-import { getPhaseLabel, getRoleTextColor } from '../utils/roleColors';
+import { getPhaseLabel, getRoleTextColor, getLocalizedRoleName } from '../utils/roleColors';
 
 interface DetailPanelProps {
   events: ObsEvent[];
@@ -85,7 +85,7 @@ export function DetailPanel({ events, selectedEvent }: DetailPanelProps) {
                   color: getRoleTextColor(role),
                 }}
               >
-                {role}: {count}
+                {getLocalizedRoleName(role)}: {count}
               </span>
             ))}
           </div>
@@ -137,7 +137,7 @@ export function DetailPanel({ events, selectedEvent }: DetailPanelProps) {
           <div className="text-xs text-gray-500 mb-2">Selected Event</div>
           <div className="bg-arena-border rounded p-2">
             <div className="text-xs text-gray-400">
-              {selectedEvent.type} · {selectedEvent.role}
+              {selectedEvent.type} · {getLocalizedRoleName(selectedEvent.role)}
             </div>
             <div className="text-sm text-gray-300 mt-1 whitespace-pre-wrap max-h-48 overflow-y-auto">
               {selectedEvent.content}

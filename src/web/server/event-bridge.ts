@@ -1,11 +1,18 @@
 import WebSocket from 'ws';
 import type { ObsEvent } from '../shared/types.js';
 
+export type StopCallback = () => void;
+
 export class EventBridge {
   private clients: Set<WebSocket> = new Set();
   private paused = false;
   private pausedEvents: ObsEvent[] = [];
   private history: ObsEvent[] = [];  // Store all events for export
+  private stopCallback: StopCallback | null = null;
+
+  setStopCallback(callback: StopCallback): void {
+    this.stopCallback = callback;
+  }
 
   addClient(ws: WebSocket): void {
     this.clients.add(ws);
@@ -33,7 +40,7 @@ export class EventBridge {
     }
   }
 
-  handleControl(action: 'pause' | 'resume' | 'clear' | 'export', ws?: WebSocket): ObsEvent[] | null {
+  handleControl(action: 'pause' | 'resume' | 'clear' | 'export' | 'stop', ws?: WebSocket): ObsEvent[] | null {
     switch (action) {
       case 'pause':
         this.paused = true;
@@ -52,6 +59,23 @@ export class EventBridge {
           const allEvents = this.getAllEvents();
           ws.send(JSON.stringify({ type: 'export', data: allEvents }));
         }
+        return null;
+      case 'stop':
+        // Trigger stop callback to terminate arena
+        if (this.stopCallback) {
+          this.stopCallback();
+        }
+        // Broadcast stop event to all clients
+        const stopEvent: ObsEvent = {
+          ts: Date.now(),
+          time: new Date().toISOString(),
+          type: 'error',
+          phase: 'system',
+          role: 'Orchestrator',
+          content: 'Arena stopped by user',
+          meta: { reason: 'user_stop' },
+        };
+        this.broadcast(stopEvent);
         return null;
       default:
         return null;
