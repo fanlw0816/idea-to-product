@@ -1,3 +1,5 @@
+import { Wifi, WifiOff, Loader2, CheckCircle, AlertTriangle, Circle } from 'lucide-react';
+
 interface ConnectionState {
   connected: boolean;
   reconnecting: boolean;
@@ -17,80 +19,80 @@ interface ConnectionStatusProps {
   arenaStatus: ArenaStatus;
 }
 
-const PHASE_LABELS: Record<string, string> = {
-  idea: '💡 Idea Arena',
-  design: '📐 Design',
-  build: '🏗️ Build',
-  review: '🔍 Review',
-  deploy: '🚀 Deploy',
+const PHASE_COLORS: Record<string, string> = {
+  idea: 'text-phase-idea',
+  design: 'text-phase-design',
+  build: 'text-phase-build',
+  review: 'text-phase-review',
+  deploy: 'text-phase-deploy',
 };
 
 export function ConnectionStatus({ state, arenaStatus }: ConnectionStatusProps) {
   // Connection indicator
-  const connColor = state.connected
-    ? 'text-green-400'
+  const ConnIcon = state.connected
+    ? Wifi
     : state.reconnecting
-    ? 'text-yellow-400'
-    : 'text-red-400';
+    ? Loader2
+    : WifiOff;
 
-  const connText = state.connected
-    ? '●'
+  const connColor = state.connected
+    ? 'text-arena-success'
     : state.reconnecting
-    ? '◐'
-    : '○';
+    ? 'text-arena-warning'
+    : 'text-arena-error';
 
   // Arena status indicator
-  const arenaColor = arenaStatus.status === 'running'
-    ? 'text-blue-400 animate-pulse'
+  const StatusIcon = arenaStatus.status === 'running'
+    ? Loader2
     : arenaStatus.status === 'completed'
-    ? 'text-green-400'
+    ? CheckCircle
     : arenaStatus.status === 'error'
-    ? 'text-red-400'
-    : 'text-gray-400';
+    ? AlertTriangle
+    : Circle;
 
-  const arenaText = arenaStatus.status === 'running'
-    ? '⚡ Running'
+  const statusColor = arenaStatus.status === 'running'
+    ? 'text-arena-info'
     : arenaStatus.status === 'completed'
-    ? '✓ Completed'
+    ? 'text-arena-success'
     : arenaStatus.status === 'error'
-    ? '⚠ Error'
-    : '○ Waiting';
+    ? 'text-arena-error'
+    : 'text-arena-text-muted';
 
-  // Phase and turn info
-  const phaseLabel = arenaStatus.phase ? PHASE_LABELS[arenaStatus.phase] || arenaStatus.phase : null;
-  const turnInfo = arenaStatus.phase === 'idea' && arenaStatus.status === 'running'
-    ? `Turn ${arenaStatus.turn}/${arenaStatus.maxTurns}`
-    : null;
+  const statusText = arenaStatus.status === 'running'
+    ? 'Running'
+    : arenaStatus.status === 'completed'
+    ? 'Completed'
+    : arenaStatus.status === 'error'
+    ? 'Error'
+    : 'Waiting';
 
   return (
-    <div className="flex items-center gap-3 text-xs">
+    <div className="flex items-center gap-3">
       {/* Connection status */}
-      <span className={connColor}>{connText}</span>
-
-      {/* Arena status with animation */}
-      <span className={`${arenaColor} font-medium`}>
-        {arenaText}
-      </span>
-
-      {/* Phase indicator */}
-      {phaseLabel && (
-        <span className="text-gray-400 border-l border-gray-600 pl-2">
-          {phaseLabel}
+      <div className={`flex items-center gap-1.5 ${connColor}`}>
+        <ConnIcon className={`icon-sm ${state.reconnecting ? 'animate-spin' : ''}`} />
+        <span className="text-xs font-medium hidden sm:inline">
+          {state.connected ? 'Connected' : state.reconnecting ? 'Reconnecting' : 'Offline'}
         </span>
-      )}
+      </div>
 
-      {/* Turn counter for idea phase */}
-      {turnInfo && (
-        <span className="text-yellow-400">
-          {turnInfo}
-        </span>
-      )}
+      {/* Divider */}
+      <div className="h-4 w-px bg-arena-border" />
+
+      {/* Arena status */}
+      <div className={`flex items-center gap-1.5 ${statusColor}`}>
+        <StatusIcon className={`icon-sm ${arenaStatus.status === 'running' ? 'animate-spin' : ''}`} />
+        <span className="text-xs font-medium">{statusText}</span>
+      </div>
 
       {/* Paused indicator */}
       {state.paused && (
-        <span className="text-orange-400 border-l border-gray-600 pl-2">
-          ⏸ Paused
-        </span>
+        <>
+          <div className="h-4 w-px bg-arena-border" />
+          <span className="arena-badge arena-badge-warning">
+            Paused
+          </span>
+        </>
       )}
     </div>
   );

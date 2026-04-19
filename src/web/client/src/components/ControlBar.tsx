@@ -1,3 +1,11 @@
+import {
+  Pause,
+  Play,
+  Square,
+  Trash2,
+  Download,
+} from 'lucide-react';
+
 interface ArenaStatus {
   status: 'waiting' | 'running' | 'completed' | 'error';
   phase: string | null;
@@ -16,29 +24,48 @@ interface ControlBarProps {
   arenaStatus: ArenaStatus;
 }
 
-export function ControlBar({ onClear, onPause, onResume, onStop, onExport, connected, paused, arenaStatus }: ControlBarProps) {
+export function ControlBar({
+  onClear,
+  onPause,
+  onResume,
+  onStop,
+  onExport,
+  connected,
+  paused,
+  arenaStatus,
+}: ControlBarProps) {
   const isRunning = arenaStatus.status === 'running';
   const isCompleted = arenaStatus.status === 'completed';
 
   return (
-    <div className="flex gap-2 mt-2 items-center">
+    <div className="flex items-center gap-2">
       {/* Pause/Resume */}
       <button
         onClick={paused ? onResume : onPause}
         disabled={!connected || isCompleted}
-        className={`px-3 py-1 text-xs rounded transition-colors ${paused ? 'bg-yellow-600 hover:bg-yellow-500' : 'bg-arena-border hover:bg-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`arena-btn ${
+          paused ? 'arena-btn-warning' : 'arena-btn-secondary'
+        }`}
+        title={paused ? 'Resume' : 'Pause'}
       >
-        {paused ? '▶ Resume' : '⏸ Pause'}
+        {paused ? (
+          <Play className="icon-sm" />
+        ) : (
+          <Pause className="icon-sm" />
+        )}
+        <span className="hidden sm:inline">{paused ? 'Resume' : 'Pause'}</span>
       </button>
 
       {/* Stop (only when running) */}
-      {isRunning && !paused && (
+      {isRunning && !paused && onStop && (
         <button
           onClick={onStop}
           disabled={!connected}
-          className="px-3 py-1 text-xs rounded bg-red-700 hover:bg-red-600 transition-colors disabled:opacity-50"
+          className="arena-btn arena-btn-danger"
+          title="Stop"
         >
-          ⏹ Stop
+          <Square className="icon-sm" />
+          <span className="hidden sm:inline">Stop</span>
         </button>
       )}
 
@@ -46,24 +73,28 @@ export function ControlBar({ onClear, onPause, onResume, onStop, onExport, conne
       <button
         onClick={onClear}
         disabled={!connected}
-        className="px-3 py-1 text-xs rounded bg-arena-border hover:bg-gray-600 transition-colors disabled:opacity-50"
+        className="arena-btn arena-btn-secondary"
+        title="Clear"
       >
-        🗑 Clear
+        <Trash2 className="icon-sm" />
+        <span className="hidden sm:inline">Clear</span>
       </button>
 
       {/* Export */}
       <button
         onClick={onExport}
         disabled={!connected}
-        className="px-3 py-1 text-xs rounded bg-arena-border hover:bg-gray-600 transition-colors disabled:opacity-50"
+        className="arena-btn arena-btn-secondary"
+        title="Export"
       >
-        📥 Export
+        <Download className="icon-sm" />
+        <span className="hidden sm:inline">Export</span>
       </button>
 
       {/* Status badge */}
       {isRunning && !paused && (
-        <span className="ml-2 px-2 py-0.5 text-xs rounded bg-blue-900/50 text-blue-300 animate-pulse">
-          Processing...
+        <span className="arena-badge arena-badge-info animate-pulse-custom">
+          Processing
         </span>
       )}
     </div>
