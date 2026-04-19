@@ -1,4 +1,4 @@
-import type WebSocket from 'ws';
+import WebSocket from 'ws';
 import type { ObsEvent } from '../shared/types.js';
 
 export class EventBridge {

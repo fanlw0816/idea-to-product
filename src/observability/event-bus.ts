@@ -49,6 +49,7 @@ export class EventBus {
   private events: ObsEvent[] = [];
   private listeners: Array<(e: ObsEvent) => void> = [];
   private storagePath: string;
+  private wsBridge?: (e: ObsEvent) => void;
 
   constructor(stateDir: string) {
     this.storagePath = path.join(stateDir, 'events.jsonl');
@@ -76,11 +77,20 @@ export class EventBus {
     }
     // Append to JSONL (one event per line)
     fs.appendFileSync(this.storagePath, JSON.stringify(event) + '\n');
+    // Bridge to WebSocket if set
+    if (this.wsBridge) {
+      this.wsBridge(event);
+    }
   }
 
   /** Register a listener that fires on every event. */
   on(fn: (e: ObsEvent) => void): void {
     this.listeners.push(fn);
+  }
+
+  /** Set WebSocket bridge for real-time broadcast. */
+  setWsBridge(fn: (e: ObsEvent) => void): void {
+    this.wsBridge = fn;
   }
 
   /** All events so far. */

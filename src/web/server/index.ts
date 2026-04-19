@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
-import WebSocket from 'ws';
+import { WebSocketServer, WebSocket as WsSocket } from 'ws';
 import path from 'path';
 import { EventBridge } from './event-bridge.js';
 import type { EventBus } from '../../observability/event-bus.js';
@@ -15,7 +15,7 @@ export interface WebServerConfig {
 export class WebServer {
   private app: express.Application;
   private server: ReturnType<typeof createServer>;
-  private wss: WebSocket.Server;
+  private wss: WebSocketServer;
   private bridge: EventBridge;
   private port: number;
   private eventBus: EventBus;
@@ -25,7 +25,7 @@ export class WebServer {
     this.eventBus = config.eventBus;
     this.app = express();
     this.server = createServer(this.app);
-    this.wss = new WebSocket.Server({ server: this.server });
+    this.wss = new WebSocketServer({ server: this.server });
     this.bridge = new EventBridge();
 
     this.setupRoutes(config.clientDir);
@@ -44,7 +44,7 @@ export class WebServer {
   }
 
   private setupWebSocket(): void {
-    this.wss.on('connection', (ws) => {
+    this.wss.on('connection', (ws: WsSocket) => {
       this.bridge.addClient(ws);
 
       // Send existing history
@@ -52,7 +52,7 @@ export class WebServer {
       this.bridge.sendHistory(ws, history);
 
       // Handle control commands
-      ws.on('message', (data) => {
+      ws.on('message', (data: Buffer) => {
         try {
           const msg = JSON.parse(data.toString());
           if (msg.type === 'control') {
