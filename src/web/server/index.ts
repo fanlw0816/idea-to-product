@@ -2,9 +2,12 @@ import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer, WebSocket as WsSocket } from 'ws';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { EventBridge } from './event-bridge.js';
 import type { EventBus } from '../../observability/event-bus.js';
 import type { ObsEvent } from '../shared/types.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface WebServerConfig {
   port: number;
@@ -37,8 +40,8 @@ export class WebServer {
     const staticDir = clientDir || path.join(__dirname, '../client/dist');
     this.app.use(express.static(staticDir));
 
-    // SPA fallback
-    this.app.get('*', (_req, res) => {
+    // SPA fallback - catch-all for non-static routes
+    this.app.get('/{*splat}', (_req, res) => {
       res.sendFile(path.join(staticDir, 'index.html'));
     });
   }
