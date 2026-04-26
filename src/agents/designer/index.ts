@@ -26,25 +26,18 @@ export class DesignerAgent extends BaseAgent {
 
 4. UI SPECS: Define theme, colors, layout style. Make it look professional and modern.
 
-5. BUILDER SPECS (CRITICAL): Analyze the project and determine what parallel builder agents are needed. Examples:
-   - Simple SPA: [{type: "frontend", label: "Frontend Builder", files: ["src/"]}]
-   - Full-stack app: [{type: "frontend", ...}, {type: "backend", ...}, {type: "database", ...}]
-   - Chrome extension: [{type: "extension-core", ...}, {type: "popup-ui", ...}, {type: "background-script", ...}]
-   - API service: [{type: "api-server", ...}, {type: "docs", ...}]
-   Each builder spec lists the files/directories that builder is responsible for.
+5. BUILDER SPECS (CRITICAL): Analyze the project and determine what parallel builder agents are needed. Each builder spec MUST list EXPLICIT FILE PATHS (not directories). Examples:
+   - Simple SPA: [{type: "frontend", label: "Frontend Builder", files: ["src/main.tsx", "src/App.tsx", "src/index.css", "src/pages/HomePage.tsx", "src/components/Header.tsx", "src/components/Button.tsx"]}]
+   - Full-stack app: [{type: "frontend", files: ["src/main.tsx", ...]}, {type: "backend", files: ["server/index.ts", "server/routes/api.ts"]}, {type: "database", files: ["db/schema.ts", "db/migrations.ts"]}]
+   Each builder MUST generate all listed files - no placeholders, no "see other builder", no partial implementations.
 
    Common builder types:
-   - "frontend" — UI components, pages, routing, styles
-   - "backend" — API server, routes, middleware
+   - "frontend" — UI components, pages, routing, styles (list every .tsx/.css file)
+   - "backend" — API server, routes, middleware (list every server file)
    - "database" — Schema, migrations, seed data
-   - "extension-core" — manifest.json, permissions, service worker
-   - "popup-ui" — Extension popup interface
-   - "background-script" — Extension background logic
-   - "api-server" — REST/GraphQL API
-   - "docs" — Documentation, README
-   - "config" — Build config, env setup, package.json
-   - "auth" — Authentication system
-   - "testing" — Test suite setup
+   - "config" — Build config, package.json, tsconfig, vite.config, index.html, .gitignore
+
+   IMPORTANT: The "files" array MUST contain explicit file paths like "src/pages/HomePage.tsx", NOT directory paths like "src/". Each file must be complete and functional.
 
    The builder specs determine which parallel agents will be spawned in the build phase.
 
