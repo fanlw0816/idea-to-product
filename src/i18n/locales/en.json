@@ -56,10 +56,14 @@
     "scoreParseFailed": "Failed to parse scores — using empty scores",
     "complete": "complete",
     "turn": "turn {n}",
+    "turnN": "turn {n}/{max}",
+    "steer": "steer (turn {n})",
     "round": "{round}...",
     "charsCount": "Response ({chars} chars):",
     "charsComplete": "{round} complete ({chars} chars)",
-    "debateSummary": "Synthesized from round-table discussion ({turns} turns). Avg score: {score}."
+    "debateSummary": "Synthesized from round-table discussion ({turns} turns). Avg score: {score}.",
+    "moderator": "Moderator",
+    "phaseGoal": "Phase goal"
   },
   "build": {
     "filesCreated": "{count} files created",

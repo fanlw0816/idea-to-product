@@ -10,7 +10,7 @@ import { DEFAULT_MODELS } from '../../core/config.js';
 import { logger } from '../../utils/logger.js';
 import { t } from '../../i18n/index.js';
 import type { IdeaArtifact } from '../../types/artifacts.js';
-import { DEBATE_ROLES } from './roles.js';
+import { DEBATE_ROLES, getLocalizedRoleName } from './roles.js';
 import type { EventBus } from '../../observability/event-bus.js';
 
 export interface IdeaGenConfig {
@@ -175,7 +175,7 @@ IMPORTANT: You are NOT the dictator of turn order. Roles can naturally respond t
 
     const text = await this.streamResponse(
       'Moderator',
-      `steer (turn ${turn})`,
+      t('arena.steer', { n: turn }),
       `${systemPrompt}${langInstr ? '\n\n' + langInstr : ''}`,
       `Discussion so far:
 
@@ -243,7 +243,7 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
 
     return this.streamResponse(
       roleCodeName,
-      `turn ${turn}`,
+      t('arena.turn', { n: turn }),
       systemPrompt,
       userContent,
       512,
@@ -336,7 +336,7 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
 
     logger.box(t('arena.title'));
     logger.info('ARENA', `${t('arena.topic')}: ${prompt}`);
-    logger.info('ROLES', DEBATE_ROLES.map((r) => `${r.codeName} (${r.name})`).join(', '));
+    logger.info('ROLES', DEBATE_ROLES.map((r) => `${getLocalizedRoleName(r, this.arenaConfig.language)} (${r.codeName})`).join(', '));
 
     // Turn 0: Moderator opens
     logger.info('MODERATOR', t('arena.opening'));
@@ -397,7 +397,7 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
       const role = DEBATE_ROLES.find((r) => r.codeName === nextSpeaker)
         ?? DEBATE_ROLES[0];
 
-      logger.info(`TURN ${turn}/${this.maxTurns}`, `${role.name} (${role.codeName})`);
+      logger.info(`TURN ${turn}/${this.maxTurns}`, `${getLocalizedRoleName(role, this.arenaConfig.language)} (${role.codeName})`);
 
       const content = await this.roleTurn(role.codeName, turn, moderatorMsg);
       this.addEntry(turn, role.codeName, content);
@@ -441,12 +441,12 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
   // Moderator Opening
   // -------------------------------------------------------
   private async moderatorOpening(userPrompt: string): Promise<string> {
-    const roleList = DEBATE_ROLES.map((r) => `- ${r.name} (${r.codeName})`).join('\n');
+    const roleList = DEBATE_ROLES.map((r) => `- ${getLocalizedRoleName(r, this.arenaConfig.language)} (${r.codeName})`).join('\n');
     const langInstr = this.langInstruction();
 
     const text = await this.streamResponse(
       'Moderator',
-      'opening',
+      t('arena.opening'),
       `You moderate a creative product discussion.${langInstr ? '\n\n' + langInstr : ''}`,
       `Welcome everyone. Topic: ${userPrompt}
 

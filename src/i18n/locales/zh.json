@@ -56,10 +56,14 @@
     "scoreParseFailed": "解析评分失败 — 使用空评分",
     "complete": "完成",
     "turn": "第 {n} 轮",
+    "turnN": "第 {n}/{max} 轮",
+    "steer": "引导（第 {n} 轮）",
     "round": "{round}...",
     "charsCount": "响应（{chars} 字符）:",
     "charsComplete": "{round} 完成（{chars} 字符）",
-    "debateSummary": "从圆桌讨论综合（{turns} 轮）。平均评分: {score}。"
+    "debateSummary": "从圆桌讨论综合（{turns} 轮）。平均评分: {score}。",
+    "moderator": "主持人",
+    "phaseGoal": "阶段目标"
   },
   "build": {
     "filesCreated": "创建了 {count} 个文件",
