@@ -1,3 +1,4 @@
+import { t } from '../../i18n/index.js';
 import { BaseAgent } from '../../core/agent.js';
 import { logger } from '../../utils/logger.js';
 import { writeFile, readFile, listFiles, fileExists } from '../../utils/fs-helpers.js';
@@ -55,21 +56,21 @@ export class DeployerAgent extends BaseAgent {
     const { idea, design, build, review } = input;
     const projectDir = build.repoPath;
 
-    logger.info('DEPLOYER', `Generating documentation for ${projectDir}`);
+    logger.info('DEPLOYER', t('deploy.generatingDocs', { dir: projectDir }));
 
     // Generate README
     const readme = await this.generateReadme(idea, design, projectDir);
     const readmePath = path.join(projectDir, 'README.md');
     await writeFile(readmePath, readme);
-    logger.success('DEPLOYER', 'README generated');
+    logger.success('DEPLOYER', t('deploy.readmeGenerated'));
 
     // List all project files
     const files = await this.listProjectFiles(projectDir);
 
     // Try to start dev server
-    let url = 'Run: npm run dev';
+    let url = t('deploy.runNpmDev');
     try {
-      logger.info('DEPLOYER', 'Installing dependencies...');
+      logger.info('DEPLOYER', t('deploy.installing'));
       await execAsync('npm install', { cwd: projectDir, timeout: 120000 });
 
       // Check if it's a Vite project
@@ -78,7 +79,7 @@ export class DeployerAgent extends BaseAgent {
         const pkg = JSON.parse(await readFile(pkgPath));
         const scripts = pkg.scripts || {};
         if (scripts.dev) {
-          logger.info('DEPLOYER', 'Starting dev server on port 5173...');
+          logger.info('DEPLOYER', t('deploy.startingServer', { port: 5173 }));
           // Start in background using spawn (don't wait for it to exit)
           spawn('npx', ['vite', '--port', '5173'], {
             cwd: projectDir,
@@ -90,10 +91,10 @@ export class DeployerAgent extends BaseAgent {
           const ready = await waitForServer('http://localhost:5173');
           if (ready) {
             url = 'http://localhost:5173';
-            logger.success('DEPLOYER', 'Dev server is ready at http://localhost:5173');
+            logger.success('DEPLOYER', t('deploy.serverReady', { url: 'http://localhost:5173' }));
           } else {
-            url = 'http://localhost:5173 (started, may still be initializing)';
-            logger.warn('DEPLOYER', 'Dev server started but not responding yet');
+            url = t('deploy.serverInitializing', { url: 'http://localhost:5173' });
+            logger.warn('DEPLOYER', t('deploy.serverNotResponding'));
           }
         } else if (scripts.start) {
           spawn('npm', ['start'], {
@@ -104,15 +105,15 @@ export class DeployerAgent extends BaseAgent {
           const ready = await waitForServer('http://localhost:3000');
           if (ready) {
             url = 'http://localhost:3000';
-            logger.success('DEPLOYER', 'Dev server is ready at http://localhost:3000');
+            logger.success('DEPLOYER', t('deploy.serverReady', { url: 'http://localhost:3000' }));
           } else {
-            url = 'http://localhost:3000 (started, may still be initializing)';
-            logger.warn('DEPLOYER', 'Dev server started but not responding yet');
+            url = t('deploy.serverInitializing', { url: 'http://localhost:3000' });
+            logger.warn('DEPLOYER', t('deploy.serverNotResponding'));
           }
         }
       }
     } catch {
-      logger.warn('DEPLOYER', 'Could not auto-start dev server');
+      logger.warn('DEPLOYER', t('deploy.cannotAutoStart'));
     }
 
     // Generate summary

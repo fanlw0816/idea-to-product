@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { ObsEvent } from './event-bus.js';
 import { EventBus } from './event-bus.js';
+import { t } from '../i18n/index.js';
 
 function escapeMarkdown(text: string): string {
   // Don't escape — the content IS markdown from the LLM
@@ -60,7 +61,7 @@ function formatMetaBlock(e: ObsEvent): string {
   const keys = Object.keys(e.meta);
   if (keys.length === 0) return '';
   const pairs = keys.map((k) => `  - **${k}**: ${e.meta[k]}`).join('\n');
-  return `\n**Details:**\n${pairs}\n`;
+  return `\n**${t('report.details')}**\n${pairs}\n`;
 }
 
 // ---- Generator ----
@@ -80,9 +81,9 @@ export class ReportGenerator {
     const sections = buildPhaseSections(events);
 
     const lines: string[] = [
-      '# Pipeline Run Report',
+      `# ${t('report.title')}`,
       '',
-      `> Generated: ${new Date().toLocaleString()}`,
+      `> ${t('report.generated', { date: new Date().toLocaleString() })}`,
       '',
       '---',
       '',
@@ -95,11 +96,11 @@ export class ReportGenerator {
         if (e.type.startsWith('role_') || e.type === 'moderator_summary') {
           lines.push(formatRoleBlock(e));
         } else if (e.type === 'synthesis' || e.type === 'scoring') {
-          lines.push(`### ${e.type === 'synthesis' ? '🎯 Synthesis' : '📊 Scoring'}\n`, '');
+          lines.push(`### ${e.type === 'synthesis' ? `🎯 ${t('report.synthesis')}` : `📊 ${t('report.scoring')}`}\n`, '');
           lines.push(escapeMarkdown(e.content), '');
           lines.push(formatMetaBlock(e));
         } else if (e.type === 'design_output') {
-          lines.push('### 📐 Design Spec', '');
+          lines.push(`### 📐 ${t('report.designSpec')}`, '');
           lines.push('```json', '');
           lines.push(escapeMarkdown(e.content), '');
           lines.push('```', '');
@@ -110,7 +111,7 @@ export class ReportGenerator {
             lines.push(formatMetaBlock(e));
           }
         } else if (e.type === 'review_findings' || e.type === 'deploy_summary') {
-          lines.push(`### ${e.type === 'review_findings' ? '🔍 Review' : '🚀 Deploy'}`, '');
+          lines.push(`### ${e.type === 'review_findings' ? `🔍 ${t('report.review')}` : `🚀 ${t('report.deploy')}`}`, '');
           lines.push(escapeMarkdown(e.content), '');
         }
       }

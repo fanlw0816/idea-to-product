@@ -8,6 +8,7 @@ import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { BaseAgent } from '../../core/agent.js';
 import { DEFAULT_MODELS } from '../../core/config.js';
 import { logger } from '../../utils/logger.js';
+import { t } from '../../i18n/index.js';
 import type { IdeaArtifact } from '../../types/artifacts.js';
 import { DEBATE_ROLES } from './roles.js';
 import type { EventBus } from '../../observability/event-bus.js';
@@ -87,7 +88,7 @@ export class IdeaGenArena extends BaseAgent {
     temperature: number
   ): Promise<string> {
     let text = '';
-    logger.info(role, `▶ ${round}...`);
+    logger.info(role, `▶ ${t('arena.round', { round })}`);
     process.stdout.write('\n');
 
     try {
@@ -117,13 +118,13 @@ export class IdeaGenArena extends BaseAgent {
         .filter((b) => b.type === 'text')
         .map((b) => (b as any).text)
         .join('\n');
-      logger.success(role, `Response (${text.length} chars):`);
+      logger.success(role, t('arena.charsCount', { chars: text.length }));
       console.log(text);
       console.log('');
     }
 
     process.stdout.write('\n\n');
-    logger.success(role, `${round} complete (${text.length} chars)`);
+    logger.success(role, t('arena.charsComplete', { round, chars: text.length }));
     return text;
   }
 
@@ -333,12 +334,12 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
         ? input
         : 'Generate a creative, feasible MVP product idea that can be built as a web application';
 
-    logger.box('CREATIVE ARENA: Round-Table Discussion');
-    logger.info('ARENA', `Topic: ${prompt}`);
+    logger.box(t('arena.title'));
+    logger.info('ARENA', `${t('arena.topic')}: ${prompt}`);
     logger.info('ROLES', DEBATE_ROLES.map((r) => `${r.codeName} (${r.name})`).join(', '));
 
     // Turn 0: Moderator opens
-    logger.info('MODERATOR', 'Opening the discussion...');
+    logger.info('MODERATOR', t('arena.opening'));
     const opening = await this.moderatorOpening(prompt);
     this.addEntry(0, 'Moderator', opening);
 
@@ -367,7 +368,7 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
       if (turn > 1 && turn % this.modInterval === 0) {
         const phase = this.getPhase(turn, consecutiveSilent);
         if (phase === 'convergence') {
-          logger.info('MODERATOR', 'Convergence signal...');
+          logger.info('MODERATOR', t('arena.convergenceSignal'));
         }
         const result = await this.moderatorSteer(turn, speakerState, phase);
         moderatorMsg = result.steeringMessage;
@@ -424,13 +425,13 @@ You are ${debateRole.name}. It's your turn. Respond in 2-4 sentences. Be specifi
 
       // Early convergence: 3+ silent turns in a row
       if (consecutiveSilent >= 3) {
-        logger.info('CONVERGENCE', 'Discussion has naturally converged.');
+        logger.info('CONVERGENCE', t('arena.convergence'));
         break;
       }
     }
 
     // Final synthesis
-    logger.info('SYNTHESIS', 'Moderator producing final idea...');
+    logger.info('SYNTHESIS', t('arena.synthesis'));
     const synthesis = await this.finalSynthesis();
     const winner = await this.scoreAndSelect(synthesis);
     return this.formatIdea(winner);
@@ -498,7 +499,7 @@ Synthesize the best product idea. Extract the strongest elements, resolve contra
       4096
     );
 
-    logger.success('SYNTHESIS', `Final idea (${response.length} chars):`);
+    logger.success('SYNTHESIS', t('arena.finalIdea', { chars: response.length }));
     console.log(response);
     console.log('');
 
@@ -534,7 +535,7 @@ Synthesize the best product idea. Extract the strongest elements, resolve contra
     try {
       const jsonMatch = response.match(/\{[^}]+\}/);
       const scores = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-      logger.info('SCORING', `Scores: ${JSON.stringify(scores)}`);
+      logger.info('SCORING', t('arena.scores', { scores: JSON.stringify(scores) }));
       if (this.bus) {
         this.bus.emit({
           type: 'scoring',
@@ -546,7 +547,7 @@ Synthesize the best product idea. Extract the strongest elements, resolve contra
       }
       return { synthesis, scores };
     } catch {
-      logger.warn('SCORING', 'Failed to parse scores — using empty scores');
+      logger.warn('SCORING', t('arena.scoreParseFailed'));
       return { synthesis, scores: {} };
     }
   }
@@ -602,7 +603,7 @@ Synthesize the best product idea. Extract the strongest elements, resolve contra
       tagline,
       features,
       targetUser,
-      debateSummary: `Synthesized from round-table discussion (${this.transcript.length} turns). Avg score: ${avgScore}.`,
+      debateSummary: t('arena.debateSummary', { turns: this.transcript.length, score: avgScore }),
       confidence,
       keyInsights,
     };

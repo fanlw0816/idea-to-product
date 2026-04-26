@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import type { ObsEvent } from '../shared/types.js';
+import { t } from '../../i18n/index.js';
 
 export type StopCallback = () => void;
 
@@ -72,7 +73,7 @@ export class EventBridge {
           type: 'stopped',
           phase: 'system',
           role: 'Orchestrator',
-          content: 'Arena stopped by user',
+          content: t('web.stopped'),
           meta: { reason: 'user_stop' },
         };
         this.broadcast(stopEvent);

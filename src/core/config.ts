@@ -4,6 +4,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { t } from '../i18n/index.js';
 
 export interface AgentRuntimeConfig {
   apiKey: string;
@@ -123,12 +124,10 @@ export function resolveConfig(cliOptions: {
 export function validateConfig(config: AgentRuntimeConfig): string[] {
   const errors: string[] = [];
   if (!config.apiKey) {
-    errors.push(
-      'No API key found. Set ANTHROPIC_API_KEY env var, pass --api-key, or add it to .idea-agent.json'
-    );
+    errors.push(t('config.errorNoApiKey'));
   }
   if (!config.model) {
-    errors.push('No model specified. Set MODEL env var or pass --model');
+    errors.push(t('config.errorNoModel'));
   }
   return errors;
 }
@@ -140,16 +139,29 @@ export function printConfig(config: AgentRuntimeConfig): void {
     : config.language === 'ko' ? 'Korean (한국어)'
     : config.language === 'en' ? 'English'
     : config.language;
+
+  // Get translated labels
+  const title = t('config.title');
+  const apiKeyLabel = t('config.apiKey');
+  const modelLabel = t('config.model');
+  const baseUrlLabel = t('config.baseUrl');
+  const maxTokensLabel = t('config.maxTokens');
+  const temperatureLabel = t('config.temperature');
+  const languageLabel = t('config.language');
+
+  // Calculate padding based on longest label (Chinese labels are shorter)
+  const padLen = 35;
+
   console.log('');
   console.log('┌─────────────────────────────────────────┐');
-  console.log('│  Configuration                          │');
+  console.log(`│  ${title.padEnd(39)}│`);
   console.log('├─────────────────────────────────────────┤');
-  console.log(`│  API Key:  ${mask(config.apiKey).padEnd(35)}│`);
-  console.log(`│  Model:    ${config.model.padEnd(35)}│`);
-  console.log(`│  Base URL: ${(config.baseUrl || '(default)').padEnd(35)}│`);
-  console.log(`│  Max Tokens: ${String(config.maxTokens).padEnd(35)}│`);
-  console.log(`│  Temperature: ${String(config.temperature).padEnd(34)}│`);
-  console.log(`│  Language:  ${langLabel.padEnd(35)}│`);
+  console.log(`│  ${apiKeyLabel}:  ${mask(config.apiKey).padEnd(padLen)}│`);
+  console.log(`│  ${modelLabel}:    ${config.model.padEnd(padLen)}│`);
+  console.log(`│  ${baseUrlLabel}: ${(config.baseUrl || '(default)').padEnd(padLen)}│`);
+  console.log(`│  ${maxTokensLabel}: ${String(config.maxTokens).padEnd(padLen)}│`);
+  console.log(`│  ${temperatureLabel}: ${String(config.temperature).padEnd(padLen)}│`);
+  console.log(`│  ${languageLabel}:  ${langLabel.padEnd(padLen)}│`);
   console.log('└─────────────────────────────────────────┘');
   console.log('');
 }

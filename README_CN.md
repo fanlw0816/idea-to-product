@@ -186,6 +186,30 @@ npx tsx src/cli.ts --lang en "做一个博客"
 
 支持的语言：`en`（默认）、`zh` / `zh-CN`、`ja`、`ko`。设置为中文时，竞技场中所有角色用中文辩论，设计师用中文写规格，所有生成的文档都是中文。
 
+**终端日志也已国际化** — 配置显示、阶段标题、状态消息、进度日志都会使用所选语言显示。
+
+### Web UI
+
+启动 Web UI 实时查看流水线运行过程：
+
+```bash
+# 启动 Web UI
+npx tsx src/cli.ts --web "做一个待办应用"
+
+# 自定义端口（默认：8080）
+npx tsx src/cli.ts --web --port 3000 "做一个博客"
+
+# 中文输出 + Web UI
+npx tsx src/cli.ts --web --lang zh "做一个待办应用"
+```
+
+Web UI 显示：
+- 实时竞技场辩论流
+- 阶段进度指示
+- 事件时间线
+- 角色状态可视化
+- 停止按钮可中断执行
+
 ## 流水线架构
 
 | 智能体 | 职责 | 并行？ |
@@ -241,10 +265,17 @@ src/
 │   ├── agent.ts          # 基础智能体类
 │   ├── orchestrator.ts   # 流水线编排器
 │   └── config.ts         # 配置解析器（API 密钥、模型、语言）
+├── i18n/
+│   ├── index.ts          # 翻译工具（t() 函数）
+│   ├── context.ts        # 全局语言上下文
+│   └── locales/          # 翻译文件（en, zh, ja, ko）
 ├── observability/
 │   ├── event-bus.ts      # 内存事件中心 + JSONL 持久化
 │   ├── terminal-formatter.ts  # 实时终端流式展示
 │   └── report-generator.ts    # 持久化 Markdown 报告
+├── web/
+│   ├── server/           # WebSocket 服务端 + 事件桥接
+│   └── client/           # React 前端（Vite + Tailwind）
 ├── types/
 │   └── artifacts.ts      # 类型定义
 ├── utils/

@@ -1,6 +1,7 @@
 import { BaseAgent } from '../../core/agent.js';
 import { logger } from '../../utils/logger.js';
 import { readFile, writeFile, fileExists, listFiles } from '../../utils/fs-helpers.js';
+import { t } from '../../i18n/index.js';
 import type { IdeaArtifact, DesignArtifact, BuildArtifact, ReviewArtifact, ReviewIssue } from '../../types/artifacts.js';
 import type { EventBus } from '../../observability/event-bus.js';
 import { exec } from 'child_process';
@@ -46,7 +47,7 @@ When asked to fix errors, respond with file markers:
     const { idea, design, build } = input;
     const projectDir = build.repoPath;
 
-    logger.info('REVIEWER', `Reviewing project at ${projectDir}`);
+    logger.info('REVIEWER', t('review.reviewing', { dir: projectDir }));
 
     const issues: ReviewIssue[] = [];
     const fixes: string[] = [];
@@ -54,17 +55,17 @@ When asked to fix errors, respond with file markers:
 
     // Phase 1: Try to build and fix errors (up to maxRetries)
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      logger.info('REVIEWER', `Build attempt ${attempt}/${this.maxRetries}...`);
+      logger.info('REVIEWER', t('review.buildAttempt', { attempt, max: this.maxRetries }));
 
       const result = await this.tryBuild(projectDir);
 
       if (result.ok) {
         buildOk = true;
-        logger.success('REVIEWER', `Build succeeded on attempt ${attempt}`);
+        logger.success('REVIEWER', t('review.buildSucceeded', { attempt }));
         break;
       }
 
-      logger.warn('REVIEWER', `Build failed: ${result.errors.slice(0, 3).join('; ')}`);
+      logger.warn('REVIEWER', t('review.buildFailed', { errors: result.errors.slice(0, 3).join('; ') }));
       issues.push(...result.errors.map(e => ({
         file: 'build',
         severity: 'error' as const,
@@ -81,25 +82,25 @@ When asked to fix errors, respond with file markers:
               if (existing) {
                 await writeFile(filePath, change.content);
                 fixes.push(`Fixed ${change.file}: ${change.reason}`);
-                logger.info('REVIEWER', `Fixed: ${change.file}`);
+                logger.info('REVIEWER', t('review.fixed', { file: change.file }));
               }
             } catch {
-              logger.warn('REVIEWER', `Failed to write fix for ${change.file}`);
+              logger.warn('REVIEWER', t('review.fixFailed', { file: change.file }));
             }
           }
         } else {
-          logger.warn('REVIEWER', 'No fix found, retrying...');
+          logger.warn('REVIEWER', t('review.noFixRetry'));
         }
       }
     }
 
     // Phase 2: Code quality review (static analysis)
-    logger.info('REVIEWER', 'Running code quality review...');
+    logger.info('REVIEWER', t('review.runningQuality'));
     const qualityIssues = await this.reviewCodeQuality(projectDir, idea, design);
     issues.push(...qualityIssues);
 
     // Phase 3: Feature completeness check
-    logger.info('REVIEWER', 'Checking feature completeness...');
+    logger.info('REVIEWER', t('review.checkingFeatures'));
     const featuresComplete = await this.checkFeatureCompleteness(projectDir, design);
 
     // Emit review findings to event bus
@@ -110,7 +111,7 @@ When asked to fix errors, respond with file markers:
         role: 'REVIEWER',
         content: issues.length > 0
           ? issues.map((i) => `[${i.severity}] ${i.file}: ${i.message}`).join('\n')
-          : 'No issues found.',
+          : t('review.noIssues'),
         meta: { passed: true, issues: issues.length, fixes: fixes.length, featuresComplete },
       });
       for (const fix of fixes) {
@@ -246,21 +247,21 @@ When asked to fix errors, respond with file markers:
           issues.push({
             file: relPath,
             severity: 'warning',
-            message: 'Uses "any" type - consider using proper types',
+            message: t('review.anyType'),
           });
         }
         if (content.includes('console.log')) {
           issues.push({
             file: relPath,
             severity: 'suggestion',
-            message: 'Has console.log statements - consider removing or using a logger',
+            message: t('review.consoleLog'),
           });
         }
         if (content.length > 500) {
           issues.push({
             file: relPath,
             severity: 'suggestion',
-            message: `File is ${Math.round(content.length / 100) / 10}KB - consider splitting`,
+            message: t('review.fileSize', { size: Math.round(content.length / 100) / 10 }),
           });
         }
       }

@@ -9,6 +9,7 @@ import { ensureDir, writeJson } from '../utils/fs-helpers.js';
 import { EventBus } from '../observability/event-bus.js';
 import { TerminalFormatter } from '../observability/terminal-formatter.js';
 import { ReportGenerator } from '../observability/report-generator.js';
+import { t } from '../i18n/index.js';
 import type {
   IdeaArtifact,
   DesignArtifact,
@@ -50,7 +51,7 @@ export class Orchestrator {
       type: 'error',
       phase: 'system',
       role: 'Orchestrator',
-      content: 'Stop requested by user',
+      content: t('web.stopRequested'),
       meta: { reason: 'user_stop' },
     });
   }
@@ -80,7 +81,7 @@ export class Orchestrator {
         onStop: () => this.stop(),  // Pass stop callback
       });
       const url = await webServer.start();
-      logger.info('WEB UI', `Started at ${url}`);
+      logger.info('WEB UI', t('web.startedAt', { url }));
     }
 
     // Phase start event
@@ -88,16 +89,16 @@ export class Orchestrator {
       type: 'phase_start',
       phase: 'idea',
       role: 'orchestrator',
-      content: `Prompt: ${userPrompt || 'random brainstorm'}`,
+      content: t('cli.prompt', { prompt: userPrompt || t('cli.randomBrainstorm') }),
       meta: { model: this.config.model },
     });
 
-    logger.info('🚀', '=== Idea-to-Product Pipeline Started ===');
-    logger.info('CONFIG', `Output: ${this.config.outputDir}`);
-    logger.info('CONFIG', `Model: ${this.config.model}`);
-    logger.info('CONFIG', `Language: ${this.config.language}`);
+    logger.info('🚀', `=== ${t('phase.pipelineStart')} ===`);
+    logger.info('CONFIG', `${t('config.output')}: ${this.config.outputDir}`);
+    logger.info('CONFIG', `${t('config.model')}: ${this.config.model}`);
+    logger.info('CONFIG', `${t('config.language')}: ${this.config.language}`);
     if (this.config.baseUrl) {
-      logger.info('CONFIG', `Base URL: ${this.config.baseUrl}`);
+      logger.info('CONFIG', `${t('config.baseUrl')}: ${this.config.baseUrl}`);
     }
 
     const result: Partial<PipelineResult> = {};
@@ -107,13 +108,13 @@ export class Orchestrator {
       result.idea = await this.runIdeaGen(userPrompt);
       if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('idea', result.idea);
-      logger.success('IDEA', result.idea.tagline);
+      logger.success('IDEA', t('idea.success', { tagline: result.idea.tagline }));
 
       // Phase 2: Design
       result.design = await this.runDesign(result.idea);
       if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('design', result.design);
-      logger.success('DESIGN', `${result.design.pages.length} pages, ${result.design.builderSpecs.length} builders`);
+      logger.success('DESIGN', t('idea.pagesBuilders', { pages: result.design.pages.length, builders: result.design.builderSpecs.length }));
 
       // Phase 3: Dynamic Build (parallel agents based on design)
       result.build = await this.runBuild(result.idea, result.design);
@@ -121,32 +122,32 @@ export class Orchestrator {
       await this.saveState('build', result.build);
 
       if (result.build.buildStatus === 'failure') {
-        logger.error('BUILD', `Build failed: ${result.build.errors?.join('; ') || 'no details'}`);
-        throw new Error('Build phase failed — cannot proceed without generated code');
+        logger.error('BUILD', t('build.buildFailed', { errors: result.build.errors?.join('; ') || 'no details' }));
+        throw new Error(t('build.buildPhaseFailed'));
       }
 
-      logger.success('BUILD', `${result.build.fileCount} files created`);
+      logger.success('BUILD', t('build.filesCreated', { count: result.build.fileCount }));
 
       // Phase 4: Review + Polish
       result.review = await this.runReview(result.idea, result.design, result.build);
       if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('review', result.review);
       logger.success(result.review.passed ? 'REVIEW' : 'REVIEW*',
-        result.review.passed ? 'Passed' : `Passed with ${result.review.fixes.length} fixes`);
+        result.review.passed ? t('summary.passed') : t('summary.passedWithFixes', { count: result.review.fixes.length }));
 
       // Phase 5: Deploy
       result.deploy = await this.runDeploy(result.idea, result.design, result.build, result.review);
       if (this.stopping) throw new Error('Pipeline stopped by user');
       await this.saveState('deploy', result.deploy);
-      logger.success('DEPLOY', result.deploy.url || 'Ready to run');
+      logger.success('DEPLOY', result.deploy.url || t('summary.ready'));
 
       // Generate persistent reports
       const reportPath = this.reportGen.save();
       const jsonPath = this.reportGen.saveJsonSummary();
-      logger.success('REPORT', `Markdown: ${reportPath}`);
-      logger.success('REPORT', `JSON events: ${jsonPath}`);
+      logger.success('REPORT', `${t('summary.markdown')}: ${reportPath}`);
+      logger.success('REPORT', `${t('summary.jsonEvents')}: ${jsonPath}`);
 
-      logger.success('DONE', 'Product complete!');
+      logger.success('DONE', t('summary.productComplete'));
       this.printSummary(result as PipelineResult);
 
       return result as PipelineResult;
@@ -157,10 +158,10 @@ export class Orchestrator {
   }
 
   private async runIdeaGen(userPrompt?: string): Promise<IdeaArtifact> {
-    logger.info('PHASE 1', 'Launching Idea Arena (6-role debate)...');
+    logger.info('PHASE 1', t('phase.idea.start'));
     this.eventBus.emit({
       type: 'phase_start', phase: 'idea', role: 'Idea Arena',
-      content: '6-Agent structured debate starting',
+      content: t('phase.idea.debateStart'),
       meta: { rounds: 3, roles: 6 },
     });
     const arena = new IdeaGenArena({
@@ -181,10 +182,10 @@ export class Orchestrator {
   }
 
   private async runDesign(idea: IdeaArtifact): Promise<DesignArtifact> {
-    logger.info('PHASE 2', 'Designing product architecture...');
+    logger.info('PHASE 2', t('phase.design.start'));
     this.eventBus.emit({
       type: 'phase_start', phase: 'design', role: 'Designer',
-      content: `Designing: ${idea.tagline}`,
+      content: t('phase.design.progress', { tagline: idea.tagline }),
       meta: {},
     });
     const designer = new DesignerAgent({
@@ -197,17 +198,17 @@ export class Orchestrator {
     const design = await designer.run(idea);
     this.eventBus.emit({
       type: 'phase_end', phase: 'design', role: 'Designer',
-      content: `${design.pages.length} pages, ${design.builderSpecs.length} builders`,
+      content: t('idea.pagesBuilders', { pages: design.pages.length, builders: design.builderSpecs.length }),
       meta: { pages: design.pages.length, builders: design.builderSpecs.length, techStack: design.techStack },
     });
     return design;
   }
 
   private async runBuild(idea: IdeaArtifact, design: DesignArtifact): Promise<BuildArtifact> {
-    logger.info('PHASE 3', `Spawning ${design.builderSpecs.length} parallel builders...`);
+    logger.info('PHASE 3', t('phase.build.start', { count: design.builderSpecs.length }));
     this.eventBus.emit({
       type: 'phase_start', phase: 'build', role: 'Builder',
-      content: `${design.builderSpecs.length} parallel builders spawning`,
+      content: t('phase.build.spawning', { count: design.builderSpecs.length }),
       meta: { builderCount: design.builderSpecs.length },
     });
     const builder = new DynamicBuilderAgent({
@@ -221,17 +222,17 @@ export class Orchestrator {
     const build = await builder.run(idea, design);
     this.eventBus.emit({
       type: 'phase_end', phase: 'build', role: 'Builder',
-      content: `${build.fileCount} files generated`,
+      content: t('build.filesGenerated', { count: build.fileCount }),
       meta: { fileCount: build.fileCount, status: build.buildStatus },
     });
     return build;
   }
 
   private async runReview(idea: IdeaArtifact, design: DesignArtifact, build: BuildArtifact): Promise<ReviewArtifact> {
-    logger.info('PHASE 4', 'Running code review and polish...');
+    logger.info('PHASE 4', t('phase.review.start'));
     this.eventBus.emit({
       type: 'phase_start', phase: 'review', role: 'Reviewer',
-      content: 'Code quality review and build fix pass',
+      content: t('phase.review.desc'),
       meta: {},
     });
     const reviewer = new ReviewerAgent({
@@ -244,17 +245,17 @@ export class Orchestrator {
     const review = await reviewer.run({ idea, design, build });
     this.eventBus.emit({
       type: 'phase_end', phase: 'review', role: 'Reviewer',
-      content: review.passed ? 'Review passed' : `Passed with ${review.fixes.length} fixes`,
+      content: review.passed ? t('summary.passed') : t('summary.passedWithFixes', { count: review.fixes.length }),
       meta: { passed: review.passed, issues: review.issues.length, fixes: review.fixes.length },
     });
     return review;
   }
 
   private async runDeploy(idea: IdeaArtifact, design: DesignArtifact, build: BuildArtifact, review: ReviewArtifact): Promise<DeployArtifact> {
-    logger.info('PHASE 5', 'Deploying product...');
+    logger.info('PHASE 5', t('phase.deploy.start'));
     this.eventBus.emit({
       type: 'phase_start', phase: 'deploy', role: 'Deployer',
-      content: 'Generating documentation and starting dev server',
+      content: t('phase.deploy.desc'),
       meta: {},
     });
     const deployer = new DeployerAgent({
@@ -268,7 +269,7 @@ export class Orchestrator {
     const deploy = await deployer.run({ idea, design, build, review });
     this.eventBus.emit({
       type: 'phase_end', phase: 'deploy', role: 'Deployer',
-      content: deploy.url || 'Ready',
+      content: deploy.url || t('summary.ready2'),
       meta: { url: deploy.url, files: deploy.files.length },
     });
     return deploy;
@@ -280,13 +281,13 @@ export class Orchestrator {
 
   private printSummary(result: PipelineResult): void {
     console.log('\n' + '='.repeat(60));
-    console.log('  PRODUCT COMPLETE');
+    console.log(`  ${t('summary.title')}`);
     console.log('='.repeat(60));
-    console.log(`  Tagline: ${result.idea.tagline}`);
-    console.log(`  Features: ${result.idea.features.join(', ')}`);
-    console.log(`  Pages: ${result.design.pages.map(p => p.name).join(', ')}`);
-    console.log(`  Files: ${result.build.fileCount}`);
-    console.log(`  URL: ${result.deploy.url}`);
+    console.log(`  ${t('summary.tagline')}: ${result.idea.tagline}`);
+    console.log(`  ${t('summary.features')}: ${result.idea.features.join(', ')}`);
+    console.log(`  ${t('summary.pages')}: ${result.design.pages.map(p => p.name).join(', ')}`);
+    console.log(`  ${t('summary.files')}: ${result.build.fileCount}`);
+    console.log(`  ${t('summary.url')}: ${result.deploy.url}`);
     console.log('='.repeat(60));
   }
 }

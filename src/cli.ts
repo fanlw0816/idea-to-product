@@ -2,6 +2,8 @@
 import { Command } from 'commander';
 import { Orchestrator } from './core/orchestrator.js';
 import { resolveConfig, validateConfig, printConfig } from './core/config.js';
+import { setLanguage } from './i18n/context.js';
+import { t } from './i18n/index.js';
 import * as path from 'path';
 import * as url from 'url';
 
@@ -35,9 +37,12 @@ cli
       language: options.lang,
     });
 
+    // Set global language for i18n before any output
+    setLanguage(cfg.language);
+
     const errors = validateConfig(cfg);
     if (errors.length > 0) {
-      console.error('Configuration errors:');
+      console.error(t('config.errorConfig'));
       errors.forEach(e => console.error(`  - ${e}`));
       process.exit(1);
     }
@@ -61,7 +66,7 @@ cli
     try {
       await orchestrator.run(prompt);
     } catch (error) {
-      console.error('Pipeline failed:', error instanceof Error ? error.message : error);
+      console.error(t('cli.pipelineFailed', { error: error instanceof Error ? error.message : error }));
       process.exit(1);
     }
   });

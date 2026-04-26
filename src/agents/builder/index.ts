@@ -1,3 +1,4 @@
+import { t } from '../../i18n/index.js';
 import { BaseAgent } from '../../core/agent.js';
 import { logger } from '../../utils/logger.js';
 import {
@@ -79,7 +80,7 @@ export class DynamicBuilderAgent extends BaseAgent {
         if (response.includes('Streaming is strongly recommended')) {
           logger.warn(
             `BUILDER:${this.name}`,
-            `Proxy returned streaming warning (attempt ${attempt + 1}/${maxRetries + 1}), retrying with lower maxTokens...`
+            t('build.streamingRetry', { attempt: attempt + 1, max: maxRetries + 1 })
           );
           lastError = 'Proxy streaming warning';
           // Reduce token budget on retry
@@ -91,7 +92,7 @@ export class DynamicBuilderAgent extends BaseAgent {
         lastError = err instanceof Error ? err.message : String(err);
         logger.warn(
           `BUILDER:${this.name}`,
-          `Attempt ${attempt + 1}/${maxRetries + 1} failed: ${lastError}`
+          t('build.attemptFailed', { attempt: attempt + 1, max: maxRetries + 1, error: lastError })
         );
         if (attempt < maxRetries) {
           maxTokens = Math.max(2048, Math.floor(maxTokens / 2));
@@ -123,10 +124,10 @@ export class DynamicBuilderAgent extends BaseAgent {
     );
     await cleanDir(projectDir);
 
-    logger.info('BUILDER', `Project directory: ${projectDir}`);
+    logger.info('BUILDER', t('build.projectDir', { dir: projectDir }));
     logger.info(
       'BUILDER',
-      `Spawning ${design.builderSpecs.length} parallel builder(s)...`
+      t('build.spawning', { count: design.builderSpecs.length })
     );
 
     // Spawn all builder agents in parallel
@@ -140,14 +141,14 @@ export class DynamicBuilderAgent extends BaseAgent {
     for (const r of builderResults) {
       const tag = `BUILDER:${r.label}`;
       if (r.status === 'success') {
-        logger.success(tag, `Generated ${r.fileCount} file(s)`);
+        logger.success(tag, t('build.generatedFiles', { count: r.fileCount }));
       } else {
-        logger.error(tag, r.error ?? 'Unknown error');
+        logger.error(tag, r.error ?? t('build.unknownError'));
       }
     }
 
     // Run integration pass — ensure everything wires together
-    logger.info('INTEGRATION', 'Merging builder outputs...');
+    logger.info('INTEGRATION', t('build.merging'));
     await this.runIntegration(idea, design, projectDir);
 
     // Count generated files (excluding node_modules)
@@ -187,7 +188,7 @@ export class DynamicBuilderAgent extends BaseAgent {
       try {
         logger.info(
           `BUILDER:${spec.label}`,
-          `Generating ${spec.files.length} file(s)...`
+          t('build.generatingFiles', { count: spec.files.length })
         );
 
         const prompt = this.buildBuilderPrompt(spec, idea, design, projectDir);
@@ -217,13 +218,13 @@ export class DynamicBuilderAgent extends BaseAgent {
           const fullPath = path.join(projectDir, filePath);
           await ensureDir(path.dirname(fullPath));
           await writeFile(fullPath, content);
-          logger.debug(`BUILDER:${spec.label}`, `Wrote: ${filePath}`);
+          logger.debug(`BUILDER:${spec.label}`, t('build.wrote', { path: filePath }));
         }
 
         result.fileCount = files.size;
         result.status = files.size > 0 ? 'success' : 'failure';
         if (result.status === 'failure') {
-          result.error = 'No file outputs parsed from response';
+          result.error = t('build.noFileOutputs');
         }
       } catch (err: unknown) {
         result.status = 'failure';
@@ -231,7 +232,7 @@ export class DynamicBuilderAgent extends BaseAgent {
           err instanceof Error ? err.message : String(err);
         logger.error(
           `BUILDER:${spec.label}`,
-          `Failed: ${result.error}`
+          t('build.failed', { error: result.error })
         );
       }
 
@@ -404,7 +405,7 @@ RULES:
     design: DesignArtifact,
     projectDir: string
   ): Promise<void> {
-    logger.info('INTEGRATION', 'Verifying project consistency...');
+    logger.info('INTEGRATION', t('build.verifying'));
 
     // Verify that key files referenced by builder specs actually exist
     const missingFiles: string[] = [];
@@ -423,7 +424,7 @@ RULES:
     if (missingFiles.length > 0) {
       logger.warn(
         'INTEGRATION',
-        `Missing files: ${missingFiles.join(', ')}`
+        t('build.missingFiles', { files: missingFiles.join(', ') })
       );
     }
 
@@ -438,7 +439,7 @@ RULES:
       ) {
         logger.warn(
           'INTEGRATION',
-          'index.html has no script tag — adding default entry'
+          t('build.noScriptTag')
         );
         html = html.replace(
           '</head>',
@@ -453,7 +454,7 @@ RULES:
     if (!(await fileExists(tsconfig))) {
       logger.info(
         'INTEGRATION',
-        'tsconfig.json missing — generating default'
+        t('build.tsconfigMissing')
       );
       await writeJson(tsconfig, {
         compilerOptions: {
@@ -477,7 +478,7 @@ RULES:
       });
     }
 
-    logger.success('INTEGRATION', 'Integration complete');
+    logger.success('INTEGRATION', t('build.integrationComplete'));
   }
 
   // ----------------------------------------------------------------

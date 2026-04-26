@@ -1,0 +1,167 @@
+{
+  "config": {
+    "title": "Configuration",
+    "apiKey": "API Key",
+    "model": "Model",
+    "baseUrl": "Base URL",
+    "maxTokens": "Max Tokens",
+    "temperature": "Temperature",
+    "language": "Language",
+    "output": "Output",
+    "errorNoApiKey": "No API key found. Set ANTHROPIC_API_KEY env var, pass --api-key, or add it to .idea-agent.json",
+    "errorNoModel": "No model specified. Set MODEL env var or pass --model",
+    "errorConfig": "Configuration errors:"
+  },
+  "phase": {
+    "pipelineStart": "Idea-to-Product Pipeline Started",
+    "idea": {
+      "start": "Launching Idea Arena (6-role debate)...",
+      "title": "IDEA ARENA",
+      "debateStart": "6-Agent structured debate starting"
+    },
+    "design": {
+      "start": "Designing product architecture...",
+      "title": "DESIGN",
+      "progress": "Designing: {tagline}"
+    },
+    "build": {
+      "start": "Spawning {count} parallel builders...",
+      "title": "BUILD",
+      "spawning": "{count} parallel builders spawning"
+    },
+    "review": {
+      "start": "Running code review and polish...",
+      "title": "REVIEW",
+      "desc": "Code quality review and build fix pass"
+    },
+    "deploy": {
+      "start": "Deploying product...",
+      "title": "DEPLOY",
+      "desc": "Generating documentation and starting dev server"
+    },
+    "orchestrator": {
+      "title": "ORCHESTRATOR"
+    }
+  },
+  "arena": {
+    "title": "CREATIVE ARENA: Round-Table Discussion",
+    "topic": "Topic",
+    "roles": "Roles",
+    "opening": "Opening the discussion...",
+    "convergence": "Discussion has naturally converged.",
+    "convergenceSignal": "Convergence signal...",
+    "synthesis": "Moderator producing final idea...",
+    "finalIdea": "Final idea ({chars} chars):",
+    "scores": "Scores: {scores}",
+    "scoreParseFailed": "Failed to parse scores — using empty scores",
+    "complete": "complete",
+    "turn": "turn {n}",
+    "round": "{round}...",
+    "charsCount": "Response ({chars} chars):",
+    "charsComplete": "{round} complete ({chars} chars)",
+    "debateSummary": "Synthesized from round-table discussion ({turns} turns). Avg score: {score}."
+  },
+  "build": {
+    "filesCreated": "{count} files created",
+    "filesGenerated": "{count} files generated",
+    "spawning": "Spawning {count} parallel builder(s)...",
+    "projectDir": "Project directory: {dir}",
+    "generatedFiles": "Generated {count} file(s)",
+    "unknownError": "Unknown error",
+    "merging": "Merging builder outputs...",
+    "generatingFiles": "Generating {count} file(s)...",
+    "wrote": "Wrote: {path}",
+    "noFileOutputs": "No file outputs parsed from response",
+    "failed": "Failed: {error}",
+    "verifying": "Verifying project consistency...",
+    "missingFiles": "Missing files: {files}",
+    "noScriptTag": "index.html has no script tag — adding default entry",
+    "tsconfigMissing": "tsconfig.json missing — generating default",
+    "integrationComplete": "Integration complete",
+    "buildFailed": "Build failed: {errors}",
+    "buildPhaseFailed": "Build phase failed — cannot proceed without generated code",
+    "streamingRetry": "Proxy returned streaming warning (attempt {attempt}/{max}), retrying with lower maxTokens...",
+    "attemptFailed": "Attempt {attempt}/{max} failed: {error}"
+  },
+  "review": {
+    "reviewing": "Reviewing project at {dir}",
+    "buildAttempt": "Build attempt {attempt}/{max}...",
+    "buildSucceeded": "Build succeeded on attempt {attempt}",
+    "buildFailed": "Build failed: {errors}",
+    "fixed": "Fixed: {file}",
+    "fixFailed": "Failed to write fix for {file}",
+    "noFixRetry": "No fix found, retrying...",
+    "runningQuality": "Running code quality review...",
+    "checkingFeatures": "Checking feature completeness...",
+    "noIssues": "No issues found.",
+    "anyType": "Uses \"any\" type - consider using proper types",
+    "consoleLog": "Has console.log statements - consider removing or using a logger",
+    "fileSize": "File is {size}KB - consider splitting"
+  },
+  "deploy": {
+    "generatingDocs": "Generating documentation for {dir}",
+    "readmeGenerated": "README generated",
+    "runNpmDev": "Run: npm run dev",
+    "installing": "Installing dependencies...",
+    "startingServer": "Starting dev server on port {port}...",
+    "serverReady": "Dev server is ready at {url}",
+    "serverInitializing": "{url} (started, may still be initializing)",
+    "serverNotResponding": "Dev server started but not responding yet",
+    "cannotAutoStart": "Could not auto-start dev server"
+  },
+  "summary": {
+    "title": "PRODUCT COMPLETE",
+    "tagline": "Tagline",
+    "features": "Features",
+    "pages": "Pages",
+    "files": "Files",
+    "url": "URL",
+    "ready": "Ready to run",
+    "ready2": "Ready",
+    "productComplete": "Product complete!",
+    "passed": "Passed",
+    "passedWithFixes": "Passed with {count} fixes",
+    "markdown": "Markdown",
+    "jsonEvents": "JSON events"
+  },
+  "idea": {
+    "success": "{tagline}",
+    "pagesBuilders": "{pages} pages, {builders} builders"
+  },
+  "designer": {
+    "designing": "Designing: \"{tagline}\"",
+    "fullSpec": "Full design spec ({chars} chars):",
+    "pagesBuilders": "Pages: {pages}, Builders: {builders}",
+    "builders": "Builders: {list}"
+  },
+  "web": {
+    "startedAt": "Started at {url}",
+    "stopped": "Arena stopped by user",
+    "stopRequested": "Stop requested by user"
+  },
+  "cli": {
+    "pipelineFailed": "Pipeline failed: {error}",
+    "prompt": "Prompt: {prompt}",
+    "randomBrainstorm": "random brainstorm"
+  },
+  "report": {
+    "title": "Pipeline Run Report",
+    "generated": "Generated: {date}",
+    "synthesis": "Synthesis",
+    "scoring": "Scoring",
+    "designSpec": "Design Spec",
+    "review": "Review",
+    "deploy": "Deploy",
+    "details": "Details:"
+  },
+  "terminal": {
+    "phase": "PHASE: {phase}",
+    "builder": "BUILDER: {label} ({files} files)",
+    "synthesis": "SYNTHESIS",
+    "scoring": "SCORING",
+    "review": "REVIEW",
+    "fixed": "FIXED: {content}",
+    "deploy": "DEPLOY",
+    "error": "ERROR"
+  }
+}

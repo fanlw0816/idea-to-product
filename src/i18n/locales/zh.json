@@ -1,0 +1,167 @@
+{
+  "config": {
+    "title": "配置信息",
+    "apiKey": "API 密钥",
+    "model": "模型",
+    "baseUrl": "API 地址",
+    "maxTokens": "最大 Token",
+    "temperature": "温度参数",
+    "language": "语言",
+    "output": "输出目录",
+    "errorNoApiKey": "未找到 API 密钥。请设置 ANTHROPIC_API_KEY 环境变量，传递 --api-key 参数，或在 .idea-agent.json 中配置",
+    "errorNoModel": "未指定模型。请设置 MODEL 环境变量或传递 --model 参数",
+    "errorConfig": "配置错误:"
+  },
+  "phase": {
+    "pipelineStart": "想法到产品流水线启动",
+    "idea": {
+      "start": "启动创意竞技场（6角色辩论）...",
+      "title": "创意竞技场",
+      "debateStart": "6角色结构化辩论开始"
+    },
+    "design": {
+      "start": "设计产品架构...",
+      "title": "设计阶段",
+      "progress": "正在设计: {tagline}"
+    },
+    "build": {
+      "start": "启动 {count} 个并行构建器...",
+      "title": "构建阶段",
+      "spawning": "{count} 个并行构建器启动中"
+    },
+    "review": {
+      "start": "运行代码审查和优化...",
+      "title": "审查阶段",
+      "desc": "代码质量审查和构建修复"
+    },
+    "deploy": {
+      "start": "交付产品...",
+      "title": "交付阶段",
+      "desc": "生成文档并启动开发服务器"
+    },
+    "orchestrator": {
+      "title": "编排器"
+    }
+  },
+  "arena": {
+    "title": "创意竞技场：圆桌讨论",
+    "topic": "主题",
+    "roles": "角色",
+    "opening": "开始讨论...",
+    "convergence": "讨论已自然收敛。",
+    "convergenceSignal": "收敛信号...",
+    "synthesis": "主持人生成最终创意...",
+    "finalIdea": "最终创意（{chars} 字符）:",
+    "scores": "评分: {scores}",
+    "scoreParseFailed": "解析评分失败 — 使用空评分",
+    "complete": "完成",
+    "turn": "第 {n} 轮",
+    "round": "{round}...",
+    "charsCount": "响应（{chars} 字符）:",
+    "charsComplete": "{round} 完成（{chars} 字符）",
+    "debateSummary": "从圆桌讨论综合（{turns} 轮）。平均评分: {score}。"
+  },
+  "build": {
+    "filesCreated": "创建了 {count} 个文件",
+    "filesGenerated": "生成了 {count} 个文件",
+    "spawning": "启动 {count} 个并行构建器...",
+    "projectDir": "项目目录: {dir}",
+    "generatedFiles": "生成了 {count} 个文件",
+    "unknownError": "未知错误",
+    "merging": "合并构建器输出...",
+    "generatingFiles": "生成 {count} 个文件...",
+    "wrote": "写入: {path}",
+    "noFileOutputs": "响应中未解析到文件输出",
+    "failed": "失败: {error}",
+    "verifying": "验证项目一致性...",
+    "missingFiles": "缺失文件: {files}",
+    "noScriptTag": "index.html 无 script 标签 — 添加默认入口",
+    "tsconfigMissing": "缺少 tsconfig.json — 生成默认配置",
+    "integrationComplete": "集成完成",
+    "buildFailed": "构建失败: {errors}",
+    "buildPhaseFailed": "构建阶段失败 — 无法继续生成代码",
+    "streamingRetry": "代理返回流式警告（尝试 {attempt}/{max}），降低 maxTokens 重试...",
+    "attemptFailed": "尝试 {attempt}/{max} 失败: {error}"
+  },
+  "review": {
+    "reviewing": "审查项目位于 {dir}",
+    "buildAttempt": "构建尝试 {attempt}/{max}...",
+    "buildSucceeded": "构建在第 {attempt} 次尝试成功",
+    "buildFailed": "构建失败: {errors}",
+    "fixed": "已修复: {file}",
+    "fixFailed": "写入修复失败: {file}",
+    "noFixRetry": "未找到修复方案，重试...",
+    "runningQuality": "运行代码质量审查...",
+    "checkingFeatures": "检查功能完整性...",
+    "noIssues": "未发现问题。",
+    "anyType": "使用了 \"any\" 类型 — 建议使用正确类型",
+    "consoleLog": "包含 console.log — 建议移除或使用日志器",
+    "fileSize": "文件大小 {size}KB — 建议拆分"
+  },
+  "deploy": {
+    "generatingDocs": "为 {dir} 生成文档",
+    "readmeGenerated": "README 已生成",
+    "runNpmDev": "运行: npm run dev",
+    "installing": "安装依赖...",
+    "startingServer": "在端口 {port} 启动开发服务器...",
+    "serverReady": "开发服务器就绪: {url}",
+    "serverInitializing": "{url} (已启动，可能仍在初始化)",
+    "serverNotResponding": "开发服务器已启动但暂未响应",
+    "cannotAutoStart": "无法自动启动开发服务器"
+  },
+  "summary": {
+    "title": "产品完成",
+    "tagline": "标语",
+    "features": "功能",
+    "pages": "页面",
+    "files": "文件",
+    "url": "地址",
+    "ready": "可运行",
+    "ready2": "就绪",
+    "productComplete": "产品完成！",
+    "passed": "通过",
+    "passedWithFixes": "通过（{count} 处修复）",
+    "markdown": "Markdown",
+    "jsonEvents": "JSON 事件"
+  },
+  "idea": {
+    "success": "{tagline}",
+    "pagesBuilders": "{pages} 个页面，{builders} 个构建器"
+  },
+  "designer": {
+    "designing": "设计: \"{tagline}\"",
+    "fullSpec": "完整设计规格（{chars} 字符）:",
+    "pagesBuilders": "页面: {pages}, 构建器: {builders}",
+    "builders": "构建器: {list}"
+  },
+  "web": {
+    "startedAt": "已启动: {url}",
+    "stopped": "用户停止了竞技场",
+    "stopRequested": "用户请求停止"
+  },
+  "cli": {
+    "pipelineFailed": "流水线失败: {error}",
+    "prompt": "提示词: {prompt}",
+    "randomBrainstorm": "随机创意风暴"
+  },
+  "report": {
+    "title": "流水线运行报告",
+    "generated": "生成时间: {date}",
+    "synthesis": "综合",
+    "scoring": "评分",
+    "designSpec": "设计规格",
+    "review": "审查",
+    "deploy": "交付",
+    "details": "详情:"
+  },
+  "terminal": {
+    "phase": "阶段: {phase}",
+    "builder": "构建器: {label}（{files} 个文件）",
+    "synthesis": "综合",
+    "scoring": "评分",
+    "review": "审查",
+    "fixed": "已修复: {content}",
+    "deploy": "交付",
+    "error": "错误"
+  }
+}

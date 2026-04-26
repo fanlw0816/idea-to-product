@@ -6,6 +6,7 @@
 import chalk from 'chalk';
 import type { ObsEvent } from './event-bus.js';
 import { EventBus } from './event-bus.js';
+import { t } from '../i18n/index.js';
 
 // ---- Color palette per role ----
 
@@ -94,9 +95,30 @@ function phaseStart(phase: string): string {
     build: '🏗️',
     review: '🔍',
     deploy: '🚀',
+    orchestrator: '▶️',
   };
-  const icon = phaseIcons[phase] ?? '▶️';
-  return header(`${icon}  PHASE: ${phase.toUpperCase()}`);
+
+  // Normalize phase name to lowercase key
+  const normalizedPhase = phase.toLowerCase().replace(/\s+/g, '').replace('arena', '');
+  const icon = phaseIcons[normalizedPhase] ?? '▶️';
+
+  // Try to get translated phase title from multiple possible keys
+  const possibleKeys = [
+    `phase.${normalizedPhase}.title`,
+    `phase.${phase.toLowerCase()}.title`,
+    `phase.idea.title`,  // fallback for Idea Arena
+  ];
+
+  let translatedPhase = phase;
+  for (const key of possibleKeys) {
+    const result = t(key);
+    if (result !== key) {  // t() returns key itself if not found
+      translatedPhase = result;
+      break;
+    }
+  }
+
+  return header(`${icon}  ${t('terminal.phase', { phase: translatedPhase })}`);
 }
 
 function phaseEnd(phase: string, stats: Record<string, string>): string {
@@ -137,13 +159,13 @@ export class TerminalFormatter {
         break;
 
       case 'synthesis':
-        console.log(`\n${chalk.dim('│')}  🎯 ${chalk.bold.whiteBright('SYNTHESIS')}`);
+        console.log(`\n${chalk.dim('│')}  🎯 ${chalk.bold.whiteBright(t('terminal.synthesis'))}`);
         console.log(formatContent(e.content));
         console.log(blockEnd());
         break;
 
       case 'scoring':
-        console.log(`\n${chalk.dim('│')}  📊 ${chalk.bold.whiteBright('SCORING')}`);
+        console.log(`\n${chalk.dim('│')}  📊 ${chalk.bold.whiteBright(t('terminal.scoring'))}`);
         console.log(formatContent(e.content));
         console.log(blockEnd());
         break;
@@ -162,29 +184,29 @@ export class TerminalFormatter {
 
       case 'builder_summary': {
         const s = e.meta;
-        console.log(`\n${chalk.dim('│')}  📋 ${chalk.bold.whiteBright(`BUILDER: ${s.label}`)} ${s.fileCount} files`);
+        console.log(`\n${chalk.dim('│')}  📋 ${chalk.bold.whiteBright(t('terminal.builder', { label: s.label, files: s.fileCount }))}`);
         console.log(blockEnd());
         break;
       }
 
       case 'review_findings':
-        console.log(`\n${chalk.dim('│')}  🔍 ${chalk.bold.whiteBright('REVIEW')}`);
+        console.log(`\n${chalk.dim('│')}  🔍 ${chalk.bold.whiteBright(t('terminal.review'))}`);
         console.log(formatContent(e.content));
         console.log(blockEnd());
         break;
 
       case 'review_fix':
-        console.log(`\n${chalk.dim('│')}  🔧 ${chalk.bold.whiteBright(`FIXED: ${e.content}`)}`);
+        console.log(`\n${chalk.dim('│')}  🔧 ${chalk.bold.whiteBright(t('terminal.fixed', { content: e.content }))}`);
         break;
 
       case 'deploy_summary':
-        console.log(`\n${chalk.dim('│')}  🚀 ${chalk.bold.whiteBright('DEPLOY')}`);
+        console.log(`\n${chalk.dim('│')}  🚀 ${chalk.bold.whiteBright(t('terminal.deploy'))}`);
         console.log(formatContent(e.content));
         console.log(blockEnd());
         break;
 
       case 'error':
-        console.log(`\n${chalk.dim('│')}  ❌ ${chalk.redBright.bold('ERROR')} ${e.role}`);
+        console.log(`\n${chalk.dim('│')}  ❌ ${chalk.redBright.bold(t('terminal.error'))} ${e.role}`);
         console.log(chalk.red(e.content));
         console.log(blockEnd());
         break;

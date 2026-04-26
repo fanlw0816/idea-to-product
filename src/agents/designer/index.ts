@@ -1,5 +1,6 @@
 import { BaseAgent } from '../../core/agent.js';
 import { logger } from '../../utils/logger.js';
+import { t } from '../../i18n/index.js';
 import type {
   IdeaArtifact,
   DesignArtifact,
@@ -63,7 +64,7 @@ Respond in valid JSON only.`,
   }
 
   async run(idea: IdeaArtifact): Promise<DesignArtifact> {
-    logger.info('DESIGNER', `Designing: "${idea.tagline}"`);
+    logger.info('DESIGNER', t('designer.designing', { tagline: idea.tagline }));
 
     const langInstr = this.language.startsWith('zh')
       ? 'OUTPUT LANGUAGE: Chinese (中文). All descriptions, names, and text MUST be written in Chinese. JSON keys remain English.'
@@ -98,7 +99,7 @@ The builderSpecs are CRITICAL — they determine which parallel builder agents w
       8192
     );
 
-    logger.success('DESIGNER', `Full design spec (${response.length} chars):`);
+    logger.success('DESIGNER', t('designer.fullSpec', { chars: response.length }));
     console.log(response);
     console.log('');
 
@@ -156,11 +157,11 @@ The builderSpecs are CRITICAL — they determine which parallel builder agents w
 
     logger.info(
       'DESIGNER',
-      `Pages: ${design.pages.length}, Builders: ${design.builderSpecs.length}`
+      t('designer.pagesBuilders', { pages: design.pages.length, builders: design.builderSpecs.length })
     );
     logger.info(
       'DESIGNER',
-      `Builders: ${design.builderSpecs.map((s) => s.label).join(', ')}`
+      t('designer.builders', { list: design.builderSpecs.map((s) => s.label).join(', ') })
     );
 
     return design as DesignArtifact;

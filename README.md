@@ -187,6 +187,30 @@ export LANGUAGE=zh
 
 Supported languages: `en` (default), `zh` / `zh-CN`, `ja`, `ko`. When set to Chinese, every role in the Arena debates in Chinese, the Designer writes specs in Chinese, and all generated docs are in Chinese.
 
+**Terminal logs are also internationalized** — configuration display, phase headers, status messages, and progress logs will display in your selected language.
+
+### Web UI
+
+Launch the web UI for real-time visualization of the pipeline:
+
+```bash
+# Start with web UI
+npx tsx src/cli.ts --web "Build a todo app"
+
+# Custom port (default: 8080)
+npx tsx src/cli.ts --web --port 3000 "Build a blog"
+
+# Chinese output + web UI
+npx tsx src/cli.ts --web --lang zh "做一个待办应用"
+```
+
+The web UI shows:
+- Real-time Arena debate stream
+- Phase progress indicators
+- Event timeline
+- Role status visualization
+- Stop button to halt execution
+
 ## Pipeline Architecture
 
 | Agent | Role | Parallel? |
@@ -238,6 +262,28 @@ src/
 │   │   └── index.ts      # Build/test/fix loop
 │   └── deployer/
 │       └── index.ts      # Docs & deployment
+├── core/
+│   ├── agent.ts          # Base agent class
+│   ├── orchestrator.ts   # Pipeline orchestrator
+│   └── config.ts         # Configuration resolver (API key, model, language)
+├── i18n/
+│   ├── index.ts          # Translation utility (t() function)
+│   ├── context.ts        # Global language context
+│   └── locales/          # Translation files (en, zh, ja, ko)
+├── observability/
+│   ├── event-bus.ts      # In-memory event hub with JSONL persistence
+│   ├── terminal-formatter.ts  # Real-time terminal streaming display
+│   └── report-generator.ts    # Persistent Markdown reports
+├── web/
+│   ├── server/           # WebSocket server + event bridge
+│   └── client/           # React frontend (Vite + Tailwind)
+├── types/
+│   └── artifacts.ts      # Type definitions
+├── utils/
+│   ├── logger.ts         # Structured logging
+│   └── fs-helpers.ts     # File operations
+└── cli.ts                # CLI entry point
+```
 ├── core/
 │   ├── agent.ts          # Base agent class
 │   ├── orchestrator.ts   # Pipeline orchestrator
